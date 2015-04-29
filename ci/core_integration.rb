@@ -1,7 +1,7 @@
 require './ci/common'
 
 namespace :ci do
-  namespace :checks_mock do |flavor|
+  namespace :core_integration do |flavor|
     task :before_install => ['ci:common:before_install']
 
     task :install => ['ci:common:install']
@@ -10,7 +10,7 @@ namespace :ci do
 
     task :script => ['ci:common:script'] do
       this_provides = [
-        'checks_mock'
+        'core_integration'
       ]
       Rake::Task['ci:common:run_tests'].invoke(this_provides)
     end
