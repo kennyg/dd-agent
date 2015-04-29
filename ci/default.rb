@@ -40,7 +40,20 @@ namespace :ci do
     task before_script: ['ci:common:before_script']
 
     task :lint do
-      sh %(find . -name '*.py' -not \\( -path '*.cache*' -or -path '*embedded*' -or -path '*venv*' \\) | xargs -n 1 pylint --rcfile=./.pylintrc)
+      output = %x[git status --porcelain]
+      paths = output.lines.collect{ |p|
+        p.strip.split ' '
+      }.select{ |stat_path|
+        status = stat_path.first
+        path = stat_path.last
+        path.end_with? ".py" and status != 'D'
+      }.collect{|stat_path| stat_path.last}
+      if paths.empty?
+        cmd = "find . -name '*.py' -not \\( -path '*.cache*' -or -path '*embedded*' -or -path '*venv*' \\)"
+      else
+        cmd = "echo #{paths.join(" ")}"
+      end
+      sh %(#{cmd} | xargs -n 1 pylint --rcfile=./.pylintrc)
     end
 
     task script: ['ci:common:script', :coverage, :lint] do
