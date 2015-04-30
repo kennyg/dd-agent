@@ -191,7 +191,8 @@ class GoExpvar(AgentCheck):
         results = []
         for new_key, new_content in self.items(content):
             if key_rex.match(new_key):
-                results.extend(self.deep_get(new_content, keys[1:], traversed_path + [str(new_key)]))
+                results.extend(
+                    self.deep_get(new_content, keys[1:], traversed_path + [str(new_key)]))
         return results
 
     def items(self, object):

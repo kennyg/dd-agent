@@ -39,7 +39,9 @@ instances:
         password: 340$Uuxwp7Mcxo7Khy
 """
 
+
 class SQLServerTestCase(unittest.TestCase):
+
     @attr('windows')
     def testSqlServer(self):
         check, instances = get_check('sqlserver', CONFIG)
@@ -59,7 +61,7 @@ class SQLServerTestCase(unittest.TestCase):
 
         # Make sure the ALL custom metric is tagged
         tagged_metrics = [m for m in metrics
-            if m[0] == 'sqlserver.db.commit_table_entries']
+                          if m[0] == 'sqlserver.db.commit_table_entries']
         for metric in tagged_metrics:
             for tag in metric[3]['tags']:
                 assert tag.startswith('db')
@@ -69,10 +71,13 @@ class SQLServerTestCase(unittest.TestCase):
         service_checks_count = len(service_checks)
         self.assertTrue(type(service_checks) == type([]))
         self.assertTrue(service_checks_count > 0)
-        self.assertEquals(len([sc for sc in service_checks if sc['check'] == check.SERVICE_CHECK_NAME]), 1, service_checks)
+        self.assertEquals(
+            len([sc for sc in service_checks if sc['check'] == check.SERVICE_CHECK_NAME]), 1, service_checks)
         # Assert that all service checks have the proper tags: host and port
-        self.assertEquals(len([sc for sc in service_checks if "host:127.0.0.1,1433" in sc['tags']]), service_checks_count, service_checks)
-        self.assertEquals(len([sc for sc in service_checks if "db:master" in sc['tags']]), service_checks_count, service_checks)
+        self.assertEquals(len([sc for sc in service_checks if "host:127.0.0.1,1433" in sc[
+                          'tags']]), service_checks_count, service_checks)
+        self.assertEquals(
+            len([sc for sc in service_checks if "db:master" in sc['tags']]), service_checks_count, service_checks)
 
 
 if __name__ == "__main__":

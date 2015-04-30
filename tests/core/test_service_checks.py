@@ -38,7 +38,8 @@ class ServiceCheckTestCase(unittest.TestCase):
             ssl_expiration = self.check._load_conf(config['instances'][0])
 
         self.assertTrue(headers["X-Auth-Token"] == "SOME-AUTH-TOKEN", headers)
-        self.assertTrue(headers.get('User-Agent') == agent_headers(self.agentConfig).get('User-Agent'), headers)
+        self.assertTrue(
+            headers.get('User-Agent') == agent_headers(self.agentConfig).get('User-Agent'), headers)
 
     def testHTTPWarning(self):
         config = {
@@ -63,7 +64,8 @@ class ServiceCheckTestCase(unittest.TestCase):
         warnings = self.check.get_warnings()
 
         self.assertTrue(len(warnings) == 4, warnings)
-        self.assertTrue(len([k for k in warnings if "Skipping SSL certificate validation" in k]) == 1, warnings)
+        self.assertTrue(
+            len([k for k in warnings if "Skipping SSL certificate validation" in k]) == 1, warnings)
 
     def testHTTP(self):
         # No passwords this time
@@ -73,7 +75,7 @@ class ServiceCheckTestCase(unittest.TestCase):
                 'url': 'http://127.0.0.1:55555',
                 'name': 'DownService',
                 'timeout': 1
-            },{
+            }, {
                 'url': 'http://google.com',
                 'name': 'UpService',
                 'timeout': 1
@@ -90,7 +92,6 @@ class ServiceCheckTestCase(unittest.TestCase):
                     self.assertEqual(service_check['status'], 0, service_check)
                 else:
                     raise Exception('Bad check name %s' % service_check)
-
 
         self.check.run()
         time.sleep(2)
@@ -138,7 +139,8 @@ class ServiceCheckTestCase(unittest.TestCase):
         self.assertEqual(events[0]['event_object'], 'UpService', events)
         self.assertEqual(type(service_checks), type([]))
         # FIXME: sometimes it's 3 instead of 2
-        self.assertTrue(len(service_checks) >= 2, service_checks)  # Only 2 because the second run wasn't flushed
+        # Only 2 because the second run wasn't flushed
+        self.assertTrue(len(service_checks) >= 2, service_checks)
         verify_service_checks(service_checks)
 
         # Cleanup the threads
@@ -226,7 +228,8 @@ class ServiceCheckTestCase(unittest.TestCase):
         assert service_checks
         self.assertEqual(type(service_checks), type([]))
         # FIXME: sometimes it's 4 instead of 3
-        self.assertTrue(len(service_checks) >= 3, service_checks)  # Only 3 because the second run wasn't flushed
+        # Only 3 because the second run wasn't flushed
+        self.assertTrue(len(service_checks) >= 3, service_checks)
         verify_service_checks(service_checks)
 
     def tearDown(self):

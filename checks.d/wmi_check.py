@@ -16,6 +16,7 @@ SEARCH_WILDCARD = '*'
 
 
 class WMICheck(AgentCheck):
+
     def __init__(self, name, init_config, agentConfig, instances):
         AgentCheck.__init__(self, name, init_config, agentConfig, instances)
         self.wmi_conns = {}
@@ -91,7 +92,7 @@ class WMICheck(AgentCheck):
 
                     link_value = str(getattr(link_results[0], target_property)).lower()
                     tags.append("{0}:{1}".format(target_property.lower(),
-                                "_".join(link_value.split())))
+                                                 "_".join(link_value.split())))
 
             # Grab the tag from the result if there's a `tag_by` value (e.g.: "name:jenkins")
             # Strip any #instance off the value when `tag_queries` is set (gives us unique tags)

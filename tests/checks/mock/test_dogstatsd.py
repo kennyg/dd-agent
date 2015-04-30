@@ -7,6 +7,7 @@ import nose.tools as nt
 
 from aggregator import MetricsAggregator, get_formatter, DEFAULT_HISTOGRAM_AGGREGATES
 
+
 class TestUnitDogStatsd(unittest.TestCase):
 
     @staticmethod
@@ -33,22 +34,22 @@ class TestUnitDogStatsd(unittest.TestCase):
         assert abs(i - j) <= e, "%s %s %s" % (i, j, e)
 
     def test_formatter(self):
-        stats = MetricsAggregator('myhost', interval=10, 
-            formatter = get_formatter({"statsd_metric_namespace": "datadog"}))
+        stats = MetricsAggregator('myhost', interval=10,
+                                  formatter=get_formatter({"statsd_metric_namespace": "datadog"}))
         stats.submit_packets('gauge:16|c|#tag3,tag4')
         metrics = self.sort_metrics(stats.flush())
         self.assertTrue(len(metrics) == 1)
         self.assertTrue(metrics[0]['metric'] == "datadog.gauge")
 
-        stats = MetricsAggregator('myhost', interval=10, 
-            formatter = get_formatter({"statsd_metric_namespace": "datadoge."}))
+        stats = MetricsAggregator('myhost', interval=10,
+                                  formatter=get_formatter({"statsd_metric_namespace": "datadoge."}))
         stats.submit_packets('gauge:16|c|#tag3,tag4')
         metrics = self.sort_metrics(stats.flush())
         self.assertTrue(len(metrics) == 1)
         self.assertTrue(metrics[0]['metric'] == "datadoge.gauge")
 
-        stats = MetricsAggregator('myhost', interval=10, 
-        formatter = get_formatter({"statsd_metric_namespace": None}))
+        stats = MetricsAggregator('myhost', interval=10,
+                                  formatter=get_formatter({"statsd_metric_namespace": None}))
         stats.submit_packets('gauge:16|c|#tag3,tag4')
         metrics = self.sort_metrics(stats.flush())
         self.assertTrue(len(metrics) == 1)
@@ -63,7 +64,6 @@ class TestUnitDogStatsd(unittest.TestCase):
         stats.submit_packets('int:15|c')
 
         stats.submit_packets('float:5|c')
-
 
         metrics = self.sort_metrics(stats.flush())
         assert len(metrics) == 2
@@ -81,9 +81,9 @@ class TestUnitDogStatsd(unittest.TestCase):
     def test_histogram_normalization(self):
         # The min is not enabled by default
         stats = MetricsAggregator('myhost',
-            interval=10,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
+                                  interval=10,
+                                  histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                  )
         for i in range(5):
             stats.submit_packets('h1:1|h')
         for i in range(20):
@@ -91,18 +91,17 @@ class TestUnitDogStatsd(unittest.TestCase):
 
         metrics = self.sort_metrics(stats.flush())
         _, _, h1count, _, _, _, \
-        _, _, h2count, _, _, _ = metrics
+            _, _, h2count, _, _, _ = metrics
 
         nt.assert_equal(h1count['points'][0][1], 0.5)
         nt.assert_equal(h2count['points'][0][1], 2)
-
 
     def test_tags(self):
         stats = MetricsAggregator('myhost')
         stats.submit_packets('gauge:1|c')
         stats.submit_packets('gauge:2|c|@1')
         stats.submit_packets('gauge:4|c|#tag1,tag2')
-        stats.submit_packets('gauge:8|c|#tag2,tag1') # Should be the same as above
+        stats.submit_packets('gauge:8|c|#tag2,tag1')  # Should be the same as above
         stats.submit_packets('gauge:16|c|#tag3,tag4')
 
         metrics = self.sort_metrics(stats.flush())
@@ -198,7 +197,6 @@ class TestUnitDogStatsd(unittest.TestCase):
         nt.assert_equals(second['points'][0][1], 0)
         nt.assert_equals(third['metric'], 'my.third.counter')
         nt.assert_equals(third['points'][0][1], 0)
-
 
     def test_sampled_counter(self):
 
@@ -319,7 +317,6 @@ class TestUnitDogStatsd(unittest.TestCase):
         metrics = stats.flush()
         nt.assert_equal(len(metrics), 0)
 
-
     def test_gauge_sample_rate(self):
         stats = MetricsAggregator('myhost')
 
@@ -336,13 +333,13 @@ class TestUnitDogStatsd(unittest.TestCase):
     def test_histogram(self):
         # The min is not enabled by default
         stats = MetricsAggregator('myhost',
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
+                                  histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                  )
 
         # Sample all numbers between 1-100 many times. This
         # means our percentiles should be relatively close to themselves.
         percentiles = range(100)
-        random.shuffle(percentiles) # in place
+        random.shuffle(percentiles)  # in place
         for i in percentiles:
             for j in xrange(20):
                 for type_ in ['h', 'ms']:
@@ -359,22 +356,20 @@ class TestUnitDogStatsd(unittest.TestCase):
         self.assert_almost_equal(pmed['points'][0][1], 50, 2)
         self.assert_almost_equal(pavg['points'][0][1], 50, 2)
         self.assert_almost_equal(pmin['points'][0][1], 1, 1)
-        self.assert_almost_equal(pcount['points'][0][1], 4000, 0) # 100 * 20 * 2
+        self.assert_almost_equal(pcount['points'][0][1], 4000, 0)  # 100 * 20 * 2
         nt.assert_equals(p95['host'], 'myhost')
 
         # Ensure that histograms are reset.
         metrics = self.sort_metrics(stats.flush())
         assert not metrics
 
-
     def test_sampled_histogram(self):
         # Submit a sampled histogram.
         # The min is not enabled by default
         stats = MetricsAggregator('myhost',
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
+                                  histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                  )
         stats.submit_packets('sampled.hist:5|h|@0.5')
-
 
         # Assert we scale up properly.
         metrics = self.sort_metrics(stats.flush())
@@ -404,17 +399,17 @@ class TestUnitDogStatsd(unittest.TestCase):
     def test_monokey_batching_notags(self):
         # The min is not enabled by default
         stats = MetricsAggregator('host',
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
+                                  histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                  )
         stats.submit_packets('test_hist:0.3|ms:2.5|ms|@0.5:3|ms')
 
         stats_ref = MetricsAggregator('host',
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
+                                      histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                      )
         packets = [
-                'test_hist:0.3|ms',
-                'test_hist:2.5|ms|@0.5',
-                'test_hist:3|ms'
+            'test_hist:0.3|ms',
+            'test_hist:2.5|ms|@0.5',
+            'test_hist:3|ms'
         ]
         stats_ref.submit_packets("\n".join(packets))
 
@@ -432,9 +427,9 @@ class TestUnitDogStatsd(unittest.TestCase):
 
         stats_ref = MetricsAggregator('host')
         packets = [
-                'test_gauge:1.5|g|#tag1:one,tag2:two',
-                'test_gauge:2.3|g|#tag3:three',
-                'test_gauge:3|g'
+            'test_gauge:1.5|g|#tag1:one,tag2:two',
+            'test_gauge:2.3|g|#tag3:three',
+            'test_gauge:3|g'
         ]
         stats_ref.submit_packets("\n".join(packets))
 
@@ -447,22 +442,22 @@ class TestUnitDogStatsd(unittest.TestCase):
             nt.assert_equal(metrics[i]['points'][0][1], metrics_ref[i]['points'][0][1])
             nt.assert_equal(metrics[i]['tags'], metrics_ref[i]['tags'])
 
-
     def test_monokey_batching_withtags_with_sampling(self):
         # The min is not enabled by default
         stats = MetricsAggregator('host',
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
-        stats.submit_packets('test_metric:1.5|c|#tag1:one,tag2:two:2.3|g|#tag3:three:3|g:42|h|#tag1:12,tag42:42|@0.22')
+                                  histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                  )
+        stats.submit_packets(
+            'test_metric:1.5|c|#tag1:one,tag2:two:2.3|g|#tag3:three:3|g:42|h|#tag1:12,tag42:42|@0.22')
 
         stats_ref = MetricsAggregator('host',
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
+                                      histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                      )
         packets = [
-                'test_metric:1.5|c|#tag1:one,tag2:two',
-                'test_metric:2.3|g|#tag3:three',
-                'test_metric:3|g',
-                'test_metric:42|h|#tag1:12,tag42:42|@0.22'
+            'test_metric:1.5|c|#tag1:one,tag2:two',
+            'test_metric:2.3|g|#tag3:three',
+            'test_metric:3|g',
+            'test_metric:42|h|#tag1:12,tag42:42|@0.22'
 
         ]
         stats_ref.submit_packets("\n".join(packets))
@@ -506,10 +501,10 @@ class TestUnitDogStatsd(unittest.TestCase):
         expiry = ag_interval * 4 + 2
         # The min is not enabled by default
         stats = MetricsAggregator('myhost',
-            interval=ag_interval,
-            expiry_seconds=expiry,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
+                                  interval=ag_interval,
+                                  expiry_seconds=expiry,
+                                  histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                  )
         stats.submit_packets('test.counter:123|c')
         stats.submit_packets('test.gauge:55|g')
         stats.submit_packets('test.set:44|s')
@@ -552,7 +547,6 @@ class TestUnitDogStatsd(unittest.TestCase):
         nt.assert_equal(metrics[0]['metric'], 'test.counter')
         nt.assert_equal(metrics[0]['points'][0][1], 123)
 
-
     def test_diagnostic_stats(self):
         stats = MetricsAggregator('myhost')
         for i in xrange(10):
@@ -581,8 +575,10 @@ class TestUnitDogStatsd(unittest.TestCase):
             metrics = self.sort_metrics(stats.flush())
             assert len(metrics) > 0
 
-            nt.assert_equal([m['points'][0][1] for m in metrics if m['metric'] == 'test.counter'], [cnt * run])
-            nt.assert_equal([m['points'][0][1] for m in metrics if m['metric'] == 'test.hist.count'], [cnt * run])
+            nt.assert_equal([m['points'][0][1]
+                             for m in metrics if m['metric'] == 'test.counter'], [cnt * run])
+            nt.assert_equal([m['points'][0][1]
+                             for m in metrics if m['metric'] == 'test.hist.count'], [cnt * run])
 
     def test_scientific_notation(self):
         stats = MetricsAggregator('myhost', interval=10)
@@ -609,7 +605,7 @@ class TestUnitDogStatsd(unittest.TestCase):
         try:
             first['tags']
         except Exception:
-                assert True
+            assert True
         else:
             assert False, "event['tags'] shouldn't be defined when no tags aren't explicited in the packet"
         nt.assert_equal(first['msg_title'], 'title1')
@@ -632,10 +628,10 @@ class TestUnitDogStatsd(unittest.TestCase):
     def test_event_title(self):
         stats = MetricsAggregator('myhost', utf8_decoding=True)
         stats.submit_packets('_e{0,4}:|text')
-        stats.submit_packets(u'_e{9,4}:2intitulé|text'.encode('utf-8')) # comes from socket
+        stats.submit_packets(u'_e{9,4}:2intitulé|text'.encode('utf-8'))  # comes from socket
         stats.submit_packets('_e{14,4}:3title content|text')
         stats.submit_packets('_e{14,4}:4title|content|text')
-        stats.submit_packets('_e{13,4}:5title\\ntitle|text') # \n stays escaped
+        stats.submit_packets('_e{13,4}:5title\\ntitle|text')  # \n stays escaped
 
         events = self.sort_events(stats.flush_events())
 
@@ -651,7 +647,7 @@ class TestUnitDogStatsd(unittest.TestCase):
         stats = MetricsAggregator('myhost')
         stats.submit_packets('_e{2,0}:t1|')
         stats.submit_packets('_e{2,12}:t2|text|content')
-        stats.submit_packets('_e{2,23}:t3|First line\\nSecond line') # \n is a newline
+        stats.submit_packets('_e{2,23}:t3|First line\\nSecond line')  # \n is a newline
 
         events = self.sort_events(stats.flush_events())
 
@@ -666,9 +662,9 @@ class TestUnitDogStatsd(unittest.TestCase):
         # Should raise because content is not encoded
 
         self.assertRaises(Exception, stats.submit_packets, u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪')
-        stats.submit_packets(u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪'.encode('utf-8')) # utf-8 compliant
+        stats.submit_packets(u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪'.encode('utf-8'))  # utf-8 compliant
         # Normal packet
-        stats.submit_packets('_e{2,23}:t3|First line\\nSecond line') # \n is a newline
+        stats.submit_packets('_e{2,23}:t3|First line\\nSecond line')  # \n is a newline
 
         events = self.sort_events(stats.flush_events())
 
@@ -730,7 +726,7 @@ class TestUnitDogStatsd(unittest.TestCase):
 
         nt.assert_equal(first['check'], 'check.1')
         assert first.get('tags') is None, "service_check['tags'] shouldn't be" + \
-                                        "defined when no tags aren't explicited in the packet"
+            "defined when no tags aren't explicited in the packet"
 
         nt.assert_equal(second['check'], 'check.2')
         nt.assert_equal(second['tags'], sorted(['t1']))
@@ -747,11 +743,11 @@ class TestUnitDogStatsd(unittest.TestCase):
         threshold = 100
         # The min is not enabled by default
         stats = MetricsAggregator('myhost',
-            recent_point_threshold=threshold,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
-        timestamp_beyond_threshold = time.time() - threshold*2
-        timestamp_within_threshold = time.time() - threshold/2
+                                  recent_point_threshold=threshold,
+                                  histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                  )
+        timestamp_beyond_threshold = time.time() - threshold * 2
+        timestamp_within_threshold = time.time() - threshold / 2
 
         # Ensure that old gauges get dropped due to old timestamps
         stats.submit_metric('my.first.gauge', 5, 'g')
@@ -820,7 +816,6 @@ class TestUnitDogStatsd(unittest.TestCase):
         nt.assert_equals(third['metric'], 'line_ending.windows')
         nt.assert_equals(third['points'][0][1], 300)
 
-
     def test_no_proxy(self):
         """ Starting with Agent 5.0.0, there should always be a local forwarder
         running and all payloads should go through it. So we should make sure
@@ -830,7 +825,7 @@ class TestUnitDogStatsd(unittest.TestCase):
         from requests.utils import get_environ_proxies
         import dogstatsd
         from os import environ as env
-        
+
         env["http_proxy"] = "http://localhost:3128"
         env["https_proxy"] = env["http_proxy"]
         env["HTTP_PROXY"] = env["http_proxy"]
@@ -849,7 +844,7 @@ class TestUnitDogStatsd(unittest.TestCase):
         }
         environ_proxies = get_environ_proxies("https://www.google.com")
         self.assertEquals(expected_proxies, environ_proxies,
-            (expected_proxies, environ_proxies))
+                          (expected_proxies, environ_proxies))
 
         # Clear the env variables set
         del env["http_proxy"]

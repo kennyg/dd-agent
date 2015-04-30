@@ -11,10 +11,12 @@
 '''
 
 # set up logging before importing any other components
-from config import initialize_logging; initialize_logging('forwarder')
+from config import initialize_logging
+initialize_logging('forwarder')
 from config import get_logging_config
 
-import os; os.umask(022)
+import os
+os.umask(022)
 
 # Standard imports
 from datetime import timedelta
@@ -69,7 +71,7 @@ MAX_WAIT_FOR_REPLAY = timedelta(seconds=90)
 # Maximum queue size in bytes (when this is reached, old messages are dropped)
 MAX_QUEUE_SIZE = 30 * 1024 * 1024  # 30MB
 
-THROTTLING_DELAY = timedelta(microseconds=1000000/2)  # 2 msg/second
+THROTTLING_DELAY = timedelta(microseconds=1000000 / 2)  # 2 msg/second
 
 
 class EmitterThread(threading.Thread):
@@ -91,7 +93,8 @@ class EmitterThread(threading.Thread):
                 self.__logger.debug('Emitter %r handling a packet', self.__name)
                 self.__emitter(data, self.__logger, self.__config)
             except Exception:
-                self.__logger.error('Failure during operation of emitter %r', self.__name, exc_info=True)
+                self.__logger.error(
+                    'Failure during operation of emitter %r', self.__name, exc_info=True)
 
     def enqueue(self, data, headers):
         try:
@@ -101,6 +104,7 @@ class EmitterThread(threading.Thread):
 
 
 class EmitterManager(object):
+
     """Track custom emitters"""
 
     def __init__(self, config):
@@ -120,7 +124,8 @@ class EmitterManager(object):
                 thread.start()
                 self.emitterThreads.append(thread)
             except Exception:
-                logging.error('Unable to start thread for emitter: %r', emitter_spec, exc_info=True)
+                logging.error(
+                    'Unable to start thread for emitter: %r', emitter_spec, exc_info=True)
         logging.info('Done with custom emitters')
 
     def send(self, data, headers=None):
@@ -166,7 +171,8 @@ class AgentTransaction(Transaction):
                 and cls._application._agentConfig['use_dd']\
                 and cls._application._agentConfig.get('api_key')
             if is_dd_user:
-                log.warn("You are a Datadog user so we will send data to https://app.datadoghq.com")
+                log.warn(
+                    "You are a Datadog user so we will send data to https://app.datadoghq.com")
                 cls._endpoints.append(DD_ENDPOINT)
         except Exception:
             log.info("Not a Datadog user")
@@ -220,29 +226,34 @@ class AgentTransaction(Transaction):
                 force_use_curl = True
                 if pycurl is not None:
                     log.debug("Configuring tornado to use proxy settings: %s:****@%s:%s" % (proxy_settings['user'],
-                              proxy_settings['host'], proxy_settings['port']))
+                                                                                            proxy_settings['host'], proxy_settings['port']))
                     tornado_client_params['proxy_host'] = proxy_settings['host']
                     tornado_client_params['proxy_port'] = proxy_settings['port']
                     tornado_client_params['proxy_username'] = proxy_settings['user']
                     tornado_client_params['proxy_password'] = proxy_settings['password']
 
                     if self._application._agentConfig.get('proxy_forbid_method_switch'):
-                        # See http://stackoverflow.com/questions/8156073/curl-violate-rfc-2616-10-3-2-and-switch-from-post-to-get
-                        tornado_client_params['prepare_curl_callback'] = lambda curl: curl.setopt(pycurl.POSTREDIR, pycurl.REDIR_POST_ALL)
+                        # See
+                        # http://stackoverflow.com/questions/8156073/curl-violate-rfc-2616-10-3-2-and-switch-from-post-to-get
+                        tornado_client_params['prepare_curl_callback'] = lambda curl: curl.setopt(
+                            pycurl.POSTREDIR, pycurl.REDIR_POST_ALL)
 
             if (not self._application.use_simple_http_client or force_use_curl) and pycurl is not None:
                 ssl_certificate = self._application._agentConfig.get('ssl_certificate', None)
                 tornado_client_params['ca_certs'] = ssl_certificate
 
             req = tornado.httpclient.HTTPRequest(**tornado_client_params)
-            use_curl = force_use_curl or self._application._agentConfig.get("use_curl_http_client") and not self._application.use_simple_http_client
+            use_curl = force_use_curl or self._application._agentConfig.get(
+                "use_curl_http_client") and not self._application.use_simple_http_client
 
             if use_curl:
                 if pycurl is None:
-                    log.error("dd-agent is configured to use the Curl HTTP Client, but pycurl is not available on this system.")
+                    log.error(
+                        "dd-agent is configured to use the Curl HTTP Client, but pycurl is not available on this system.")
                 else:
                     log.debug("Using CurlAsyncHTTPClient")
-                    tornado.httpclient.AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
+                    tornado.httpclient.AsyncHTTPClient.configure(
+                        "tornado.curl_httpclient.CurlAsyncHTTPClient")
             else:
                 log.debug("Using SimpleHTTPClient")
             http = tornado.httpclient.AsyncHTTPClient()
@@ -300,11 +311,12 @@ class StatusHandler(tornado.web.RequestHandler):
 
         m = MetricTransaction.get_tr_manager()
 
-        self.write("<table><tr><td>Id</td><td>Size</td><td>Error count</td><td>Next flush</td></tr>")
+        self.write(
+            "<table><tr><td>Id</td><td>Size</td><td>Error count</td><td>Next flush</td></tr>")
         transactions = m.get_transactions()
         for tr in transactions:
             self.write("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>" %
-                (tr.get_id(), tr.get_size(), tr.get_error_count(), tr.get_next_flush()))
+                       (tr.get_id(), tr.get_size(), tr.get_error_count(), tr.get_next_flush()))
         self.write("</table>")
 
         if threshold >= 0:
@@ -347,9 +359,11 @@ class ApiInputHandler(tornado.web.RequestHandler):
 
 
 class ApiCheckRunHandler(tornado.web.RequestHandler):
+
     """
     Handler to submit Service Checks
     """
+
     def post(self):
         # read message
         msg = self.request.body
@@ -378,7 +392,8 @@ class Application(tornado.web.Application):
         AgentTransaction.set_tr_manager(self._tr_manager)
 
         self._watchdog = None
-        self.skip_ssl_validation = skip_ssl_validation or agentConfig.get('skip_ssl_validation', False)
+        self.skip_ssl_validation = skip_ssl_validation or agentConfig.get(
+            'skip_ssl_validation', False)
         self.use_simple_http_client = use_simple_http_client
         if self.skip_ssl_validation:
             log.info("Skipping SSL hostname validation, useful when using a transparent proxy")
@@ -454,16 +469,19 @@ class Application(tornado.web.Application):
                 try:
                     http_server.listen(self._port, address=self._agentConfig['bind_host'])
                 except gaierror:
-                    log.warning("localhost seems undefined in your host file, using 127.0.0.1 instead")
+                    log.warning(
+                        "localhost seems undefined in your host file, using 127.0.0.1 instead")
                     http_server.listen(self._port, address="127.0.0.1")
                 except socket_error, e:
                     if "Errno 99" in str(e):
-                        log.warning("IPv6 doesn't seem to be fully supported. Falling back to IPv4")
+                        log.warning(
+                            "IPv6 doesn't seem to be fully supported. Falling back to IPv4")
                         http_server.listen(self._port, address="127.0.0.1")
                     else:
                         raise
         except socket_error, e:
-            log.exception("Socket error %s. Is another application listening on the same port ? Exiting", e)
+            log.exception(
+                "Socket error %s. Is another application listening on the same port ? Exiting", e)
             sys.exit(1)
         except Exception, e:
             log.exception("Uncaught exception. Forwarder is exiting.")
@@ -517,7 +535,8 @@ def init(skip_ssl_validation=False, use_simple_http_client=False):
     else:
         port = int(port)
 
-    app = Application(port, agentConfig, skip_ssl_validation=skip_ssl_validation, use_simple_http_client=use_simple_http_client)
+    app = Application(port, agentConfig, skip_ssl_validation=skip_ssl_validation,
+                      use_simple_http_client=use_simple_http_client)
 
     def sigterm_handler(signum, frame):
         log.info("caught sigterm. stopping")
@@ -536,7 +555,8 @@ def main():
     deprecate_old_command_line_tools()
 
     define("sslcheck", default=1, help="Verify SSL hostname, on by default")
-    define("use_simple_http_client", default=0, help="Use Tornado SimpleHTTPClient instead of CurlAsyncHTTPClient")
+    define("use_simple_http_client", default=0,
+           help="Use Tornado SimpleHTTPClient instead of CurlAsyncHTTPClient")
     args = parse_command_line()
     skip_ssl_validation = False
     use_simple_http_client = False

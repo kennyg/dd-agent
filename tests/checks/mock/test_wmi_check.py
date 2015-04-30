@@ -101,9 +101,11 @@ Win32_Process_attr = {
 
 
 class Mocked_Win32_Service(object):
+
     """
     Generate Mocked Win32 Service from given attributes
     """
+
     def __init__(self, **entries):
         self.__dict__.update(entries)
 
@@ -115,9 +117,11 @@ class Mocked_Win32_Service(object):
 
 
 class Mocked_WMI(object):
+
     """
     Mock WMI methods for test purpose
     """
+
     def __init__(self, mocked_wmi_classes):
         # Make WMI classes callable
         def get_wmi_obj(wmi_obj):

@@ -7,6 +7,7 @@ from checks import AgentCheck
 # 3rd party
 import requests
 
+
 class Marathon(AgentCheck):
 
     DEFAULT_TIMEOUT = 5
@@ -33,7 +34,7 @@ class Marathon(AgentCheck):
         user = instance.get('user')
         password = instance.get('password')
         if user is not None and password is not None:
-            auth = (user,password)
+            auth = (user, password)
         else:
             auth = None
         instance_tags = instance.get('tags', [])
@@ -62,19 +63,19 @@ class Marathon(AgentCheck):
         except requests.exceptions.Timeout:
             # If there's a timeout
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                message='%s timed out after %s seconds.' % (url, timeout),
-                tags = ["url:{0}".format(url)])
+                               message='%s timed out after %s seconds.' % (url, timeout),
+                               tags=["url:{0}".format(url)])
             raise Exception("Timeout when hitting %s" % url)
 
         except requests.exceptions.HTTPError:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                message='%s returned a status of %s' % (url, r.status_code),
-                tags = ["url:{0}".format(url)])
+                               message='%s returned a status of %s' % (url, r.status_code),
+                               tags=["url:{0}".format(url)])
             raise Exception("Got %s when hitting %s" % (r.status_code, url))
 
         else:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.OK,
-                tags = ["url:{0}".format(url)]
-            )
+                               tags=["url:{0}".format(url)]
+                               )
 
         return r.json()

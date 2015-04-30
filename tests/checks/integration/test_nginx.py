@@ -42,7 +42,8 @@ class TestNginx(unittest.TestCase):
         service_checks = nginx.get_service_checks()
         can_connect = [sc for sc in service_checks if sc['check'] == 'nginx.can_connect']
         for i in range(len(can_connect)):
-            self.assertEquals(set(can_connect[i]['tags']), set(['host:localhost', 'port:44441']), service_checks)
+            self.assertEquals(set(can_connect[i]['tags']), set(
+                ['host:localhost', 'port:44441']), service_checks)
 
     def test_nginx_plus(self):
         test_data = Fixtures.read_file('nginx_plus_in.json')

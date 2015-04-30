@@ -67,6 +67,7 @@ DEFAULT_SOCKET_TIMEOUT = 5
 
 
 class UnixHTTPConnection(httplib.HTTPConnection):
+
     """Class used in conjuction with UnixSocketHandler to make urllib2
     compatible with Unix sockets."""
 
@@ -87,8 +88,10 @@ class UnixHTTPConnection(httplib.HTTPConnection):
 
 
 class UnixSocketHandler(urllib2.AbstractHTTPHandler):
+
     """Class that makes Unix sockets work with urllib2 without any additional
     dependencies."""
+
     def unix_open(self, req):
         full_path = "%s%s" % urlsplit(req.get_full_url())[1:3]
         path = os.path.sep
@@ -107,6 +110,7 @@ class UnixSocketHandler(urllib2.AbstractHTTPHandler):
 
 
 class Docker(AgentCheck):
+
     """Collect metrics and events from Docker API and cgroups"""
 
     def __init__(self, name, init_config, agentConfig, instances=None):
@@ -141,7 +145,6 @@ class Docker(AgentCheck):
         if _is_affirmative(instance.get('collect_events', True)):
             self._process_events(instance, ids_to_names, skipped_container_ids)
 
-
     # Containers
 
     def _count_images(self, instance):
@@ -166,7 +169,7 @@ class Docker(AgentCheck):
             all_containers = self._get_containers(instance, get_all=True)
         except (socket.timeout, urllib2.URLError), e:
             self.service_check(service_check_name, AgentCheck.CRITICAL,
-                message="Unable to list Docker containers: {0}".format(e))
+                               message="Unable to list Docker containers: {0}".format(e))
             raise Exception("Failed to collect the list of containers. Exception: {0}".format(e))
         self.service_check(service_check_name, AgentCheck.OK)
 
@@ -191,7 +194,8 @@ class Docker(AgentCheck):
         return running_containers, ids_to_names
 
     def _get_container_name(self, container):
-        # Use either the first container name or the container ID to name the container in our events
+        # Use either the first container name or the container ID to name the
+        # container in our events
         if container.get('Names', []):
             return container['Names'][0].lstrip("/")
         return container['Id'][:11]
@@ -247,12 +251,14 @@ class Docker(AgentCheck):
                 if key in container:
                     getattr(self, metric_type)(dd_key, int(container[key]), tags=container_tags)
             for cgroup in CGROUP_METRICS:
-                stat_file = self._get_cgroup_file(cgroup["cgroup"], container['Id'], cgroup['file'])
+                stat_file = self._get_cgroup_file(
+                    cgroup["cgroup"], container['Id'], cgroup['file'])
                 stats = self._parse_cgroup_file(stat_file)
                 if stats:
                     for key, (dd_key, metric_type, common_metric) in cgroup['metrics'].iteritems():
                         if key in stats and (common_metric or collect_uncommon_metrics):
-                            getattr(self, metric_type)(dd_key, int(stats[key]), tags=container_tags)
+                            getattr(self, metric_type)(
+                                dd_key, int(stats[key]), tags=container_tags)
         if use_filters:
             self.log.debug("List of excluded containers: {0}".format(skipped_container_ids))
 
@@ -270,7 +276,6 @@ class Docker(AgentCheck):
     def _new_tags_conversion(self, tag):
         # Prefix tags to avoid conflict with AWS tags
         return NEW_TAGS_MAP.get(tag, tag)
-
 
     # Events
 
@@ -315,14 +320,14 @@ class Docker(AgentCheck):
             status_text = ", ".join(["%d %s" % (count, st) for st, count in status.iteritems()])
             msg_title = "%s %s on %s" % (image_name, status_text, self.hostname)
             msg_body = ("%%%\n"
-                "{image_name} {status} on {hostname}\n"
-                "```\n{status_changes}\n```\n"
-                "%%%").format(
-                    image_name=image_name,
-                    status=status_text,
-                    hostname=self.hostname,
-                    status_changes="\n".join(
-                        ["%s \t%s" % (change[1].upper(), change[0]) for change in status_change])
+                        "{image_name} {status} on {hostname}\n"
+                        "```\n{status_changes}\n```\n"
+                        "%%%").format(
+                image_name=image_name,
+                status=status_text,
+                hostname=self.hostname,
+                status_changes="\n".join(
+                    ["%s \t%s" % (change[1].upper(), change[0]) for change in status_change])
             )
             events.append({
                 'timestamp': max_timestamp,
@@ -341,7 +346,6 @@ class Docker(AgentCheck):
             self.log.debug("Creating event: %s" % ev['msg_title'])
             self.event(ev)
 
-
     # Docker API
 
     def _get_containers(self, instance, with_size=False, get_all=False):
@@ -356,9 +360,9 @@ class Docker(AgentCheck):
         """Get the list of events """
         now = int(time.time())
         result = self._get_json("%s/events" % instance["url"], params={
-                "until": now,
-                "since": self._last_event_collection_ts[instance["url"]] or now - 60,
-            }, multi=True)
+            "until": now,
+            "since": self._last_event_collection_ts[instance["url"]] or now - 60,
+        }, multi=True)
         self._last_event_collection_ts[instance["url"]] = now
         if type(result) == dict:
             result = [result]
@@ -375,18 +379,18 @@ class Docker(AgentCheck):
             request = self.url_opener.open(req)
         except urllib2.URLError, e:
             if "Errno 13" in str(e):
-                raise Exception("Unable to connect to socket. dd-agent user must be part of the 'docker' group")
+                raise Exception(
+                    "Unable to connect to socket. dd-agent user must be part of the 'docker' group")
             raise
 
         response = request.read()
-        if multi and "}{" in response: # docker api sometimes returns juxtaposed json dictionaries
+        if multi and "}{" in response:  # docker api sometimes returns juxtaposed json dictionaries
             response = "[{0}]".format(response.replace("}{", "},{"))
 
         if not response:
             return []
 
         return json.loads(response)
-
 
     # Cgroups
 
@@ -413,10 +417,10 @@ class Docker(AgentCheck):
             self._cgroup_filename_pattern = self._find_cgroup_filename_pattern()
 
         return self._cgroup_filename_pattern % (dict(
-                    mountpoint=self._mountpoints[cgroup],
-                    id=container_id,
-                    file=filename,
-                ))
+            mountpoint=self._mountpoints[cgroup],
+            id=container_id,
+            file=filename,
+        ))
 
     def _find_cgroup(self, hierarchy, docker_root):
         """Finds the mount point for a specified cgroup hierarchy. Works with
@@ -431,7 +435,7 @@ class Docker(AgentCheck):
         cgroup_mounts = filter(lambda x: x[2] == "cgroup", mounts)
         if len(cgroup_mounts) == 0:
             raise Exception("Can't find mounted cgroups. If you run the Agent inside a container,"
-                " please refer to the documentation.")
+                            " please refer to the documentation.")
         # Old cgroup style
         if len(cgroup_mounts) == 1:
             return os.path.join(docker_root, cgroup_mounts[0][1])

@@ -16,6 +16,7 @@ from tests.checks.common import Fixtures
 
 
 class TestGanglia(unittest.TestCase):
+
     def testSpeed(self):
         # Pretend to be gmetad and serve a large piece of content
         original_file = Fixtures.file('ganglia.txt')

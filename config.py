@@ -36,7 +36,7 @@ log = logging.getLogger(__name__)
 
 OLD_STYLE_PARAMETERS = [
     ('apache_status_url', "apache"),
-    ('cacti_mysql_server' , "cacti"),
+    ('cacti_mysql_server', "cacti"),
     ('couchdb_server', "couchdb"),
     ('elasticsearch', "elasticsearch"),
     ('haproxy_url', "haproxy"),
@@ -54,13 +54,14 @@ OLD_STYLE_PARAMETERS = [
 NAGIOS_OLD_CONF_KEYS = [
     'nagios_log',
     'nagios_perf_cfg'
-    ]
+]
 
 DEFAULT_CHECKS = ("network", "ntp")
 LEGACY_DATADOG_URLS = [
     "app.datadoghq.com",
     "app.datad0g.com",
 ]
+
 
 class PathNotFound(Exception):
     pass
@@ -69,17 +70,17 @@ class PathNotFound(Exception):
 def get_parsed_args():
     parser = OptionParser()
     parser.add_option('-A', '--autorestart', action='store_true', default=False,
-                        dest='autorestart')
+                      dest='autorestart')
     parser.add_option('-d', '--dd_url', action='store', default=None,
-                        dest='dd_url')
+                      dest='dd_url')
     parser.add_option('-c', '--clean', action='store_true', default=False,
-                        dest='clean')
+                      dest='clean')
     parser.add_option('-u', '--use-local-forwarder', action='store_true',
-                        default=False, dest='use_forwarder')
+                      default=False, dest='use_forwarder')
     parser.add_option('-n', '--disable-dd', action='store_true', default=False,
-                        dest="disable_dd")
+                      dest="disable_dd")
     parser.add_option('-v', '--verbose', action='store_true', default=False,
-                        dest='verbose',
+                      dest='verbose',
                       help='Print out stacktraces for errors in checks')
 
     try:
@@ -89,7 +90,7 @@ def get_parsed_args():
         options, args = Values({'autorestart': False,
                                 'dd_url': None,
                                 'clean': False,
-                                'disable_dd':False,
+                                'disable_dd': False,
                                 'use_forwarder': False}), []
     return options, args
 
@@ -108,9 +109,10 @@ def get_url_endpoint(default_url, endpoint_type='app'):
 
     # Replace https://app.datadoghq.com in https://5-2-0-app.agent.datadoghq.com
     return default_url.replace(subdomain,
-        "{0}-{1}.agent".format(
-            get_version().replace(".", "-"),
-            endpoint_type))
+                               "{0}-{1}.agent".format(
+                                   get_version().replace(".", "-"),
+                                   endpoint_type))
+
 
 def skip_leading_wsp(f):
     "Works on a file, returns a file-like object"
@@ -129,9 +131,9 @@ def _windows_commondata_path():
 
     _SHGetFolderPath = windll.shell32.SHGetFolderPathW
     _SHGetFolderPath.argtypes = [wintypes.HWND,
-                                ctypes.c_int,
-                                wintypes.HANDLE,
-                                wintypes.DWORD, wintypes.LPCWSTR]
+                                 ctypes.c_int,
+                                 wintypes.HANDLE,
+                                 wintypes.DWORD, wintypes.LPCWSTR]
 
     path_buf = wintypes.create_unicode_buffer(wintypes.MAX_PATH)
     result = _SHGetFolderPath(0, CSIDL_COMMON_APPDATA, 0, 0, path_buf)
@@ -232,8 +234,10 @@ def get_config_path(cfg_path=None, os_name=None):
         return os.path.join(path, DATADOG_CONF)
 
     # If all searches fail, exit the agent with an error
-    sys.stderr.write("Please supply a configuration file at %s or in the directory where the Agent is currently deployed.\n" % bad_path)
+    sys.stderr.write(
+        "Please supply a configuration file at %s or in the directory where the Agent is currently deployed.\n" % bad_path)
     sys.exit(3)
+
 
 def get_default_bind_host():
     try:
@@ -266,6 +270,7 @@ def get_histogram_aggregates(configstr=None):
 
     return result
 
+
 def get_histogram_percentiles(configstr=None):
     if configstr is None:
         return None
@@ -280,17 +285,18 @@ def get_histogram_percentiles(configstr=None):
                 if floatval <= 0 or floatval >= 1:
                     raise ValueError
                 if len(val) > 4:
-                    log.warning("Histogram percentiles are rounded to 2 digits: {0} rounded"\
-                        .format(floatval))
+                    log.warning("Histogram percentiles are rounded to 2 digits: {0} rounded"
+                                .format(floatval))
                 result.append(float(val[0:4]))
             except ValueError:
-                log.warning("Bad histogram percentile value {0}, must be float in ]0;1[, skipping"\
-                    .format(val))
+                log.warning("Bad histogram percentile value {0}, must be float in ]0;1[, skipping"
+                            .format(val))
     except Exception:
         log.exception("Error when parsing histogram percentiles, skipping")
         return None
 
     return result
+
 
 def get_config(parse_args=True, cfg_path=None, options=None):
     if parse_args:
@@ -363,18 +369,21 @@ def get_config(parse_args=True, cfg_path=None, options=None):
             agentConfig['additional_checksd'] = os.path.join(common_path, 'Datadog', 'checks.d')
 
         if config.has_option('Main', 'use_dogstatsd'):
-            agentConfig['use_dogstatsd'] = config.get('Main', 'use_dogstatsd').lower() in ("yes", "true")
+            agentConfig['use_dogstatsd'] = config.get(
+                'Main', 'use_dogstatsd').lower() in ("yes", "true")
         else:
             agentConfig['use_dogstatsd'] = True
 
         # Concerns only Windows
         if config.has_option('Main', 'use_web_info_page'):
-            agentConfig['use_web_info_page'] = config.get('Main', 'use_web_info_page').lower() in ("yes", "true")
+            agentConfig['use_web_info_page'] = config.get(
+                'Main', 'use_web_info_page').lower() in ("yes", "true")
         else:
             agentConfig['use_web_info_page'] = True
 
         if not agentConfig['use_dd']:
-            sys.stderr.write("Please specify at least one endpoint to send metrics to. This can be done in datadog.conf.")
+            sys.stderr.write(
+                "Please specify at least one endpoint to send metrics to. This can be done in datadog.conf.")
             exit(2)
 
         # Which API key to use
@@ -383,7 +392,8 @@ def get_config(parse_args=True, cfg_path=None, options=None):
         # local traffic only? Default to no
         agentConfig['non_local_traffic'] = False
         if config.has_option('Main', 'non_local_traffic'):
-            agentConfig['non_local_traffic'] = config.get('Main', 'non_local_traffic').lower() in ("yes", "true")
+            agentConfig['non_local_traffic'] = config.get(
+                'Main', 'non_local_traffic').lower() in ("yes", "true")
 
         # DEPRECATED
         if config.has_option('Main', 'use_ec2_instance_id'):
@@ -399,10 +409,12 @@ def get_config(parse_args=True, cfg_path=None, options=None):
 
         # Custom histogram aggregate/percentile metrics
         if config.has_option('Main', 'histogram_aggregates'):
-            agentConfig['histogram_aggregates'] = get_histogram_aggregates(config.get('Main', 'histogram_aggregates'))
+            agentConfig['histogram_aggregates'] = get_histogram_aggregates(
+                config.get('Main', 'histogram_aggregates'))
 
         if config.has_option('Main', 'histogram_percentiles'):
-            agentConfig['histogram_percentiles'] = get_histogram_percentiles(config.get('Main', 'histogram_percentiles'))
+            agentConfig['histogram_percentiles'] = get_histogram_percentiles(
+                config.get('Main', 'histogram_percentiles'))
 
         # Disable Watchdog (optionally)
         if config.has_option('Main', 'watchdog'):
@@ -427,7 +439,7 @@ def get_config(parse_args=True, cfg_path=None, options=None):
             else:
                 agentConfig[key] = value
 
-        #Forwarding to external statsd server
+        # Forwarding to external statsd server
         if config.has_option('Main', 'statsd_forward_host'):
             agentConfig['statsd_forward_host'] = config.get('Main', 'statsd_forward_host')
             if config.has_option('Main', 'statsd_forward_port'):
@@ -435,7 +447,7 @@ def get_config(parse_args=True, cfg_path=None, options=None):
 
         # optionally send dogstatsd data directly to the agent.
         if config.has_option('Main', 'dogstatsd_use_ddurl'):
-            if  _is_affirmative(config.get('Main', 'dogstatsd_use_ddurl')):
+            if _is_affirmative(config.get('Main', 'dogstatsd_use_ddurl')):
                 agentConfig['dogstatsd_target'] = agentConfig['dd_url']
 
         # Optional config
@@ -452,7 +464,8 @@ def get_config(parse_args=True, cfg_path=None, options=None):
             agentConfig['check_timings'] = _is_affirmative(config.get('Main', 'check_timings'))
 
         if config.has_option('Main', 'exclude_process_args'):
-            agentConfig['exclude_process_args'] = _is_affirmative(config.get('Main', 'exclude_process_args'))
+            agentConfig['exclude_process_args'] = _is_affirmative(
+                config.get('Main', 'exclude_process_args'))
 
         try:
             filter_device_re = config.get('Main', 'device_blacklist_re')
@@ -468,7 +481,8 @@ def get_config(parse_args=True, cfg_path=None, options=None):
             # Older version, single log support
             log_path = config.get("Main", "dogstream_log")
             if config.has_option("Main", "dogstream_line_parser"):
-                agentConfig["dogstreams"] = ':'.join([log_path, config.get("Main", "dogstream_line_parser")])
+                agentConfig["dogstreams"] = ':'.join(
+                    [log_path, config.get("Main", "dogstream_line_parser")])
             else:
                 agentConfig["dogstreams"] = log_path
 
@@ -479,7 +493,8 @@ def get_config(parse_args=True, cfg_path=None, options=None):
             agentConfig["nagios_perf_cfg"] = config.get("Main", "nagios_perf_cfg")
 
         if config.has_option("Main", "use_curl_http_client"):
-            agentConfig["use_curl_http_client"] = _is_affirmative(config.get("Main", "use_curl_http_client"))
+            agentConfig["use_curl_http_client"] = _is_affirmative(
+                config.get("Main", "use_curl_http_client"))
         else:
             # Default to False as there are some issues with the curl client and ELB
             agentConfig["use_curl_http_client"] = False
@@ -490,25 +505,30 @@ def get_config(parse_args=True, cfg_path=None, options=None):
                 agentConfig['WMI'][key] = value
 
         if config.has_option("Main", "limit_memory_consumption") and \
-            config.get("Main", "limit_memory_consumption") is not None:
-            agentConfig["limit_memory_consumption"] = int(config.get("Main", "limit_memory_consumption"))
+                config.get("Main", "limit_memory_consumption") is not None:
+            agentConfig["limit_memory_consumption"] = int(
+                config.get("Main", "limit_memory_consumption"))
         else:
             agentConfig["limit_memory_consumption"] = None
 
         if config.has_option("Main", "skip_ssl_validation"):
-            agentConfig["skip_ssl_validation"] = _is_affirmative(config.get("Main", "skip_ssl_validation"))
+            agentConfig["skip_ssl_validation"] = _is_affirmative(
+                config.get("Main", "skip_ssl_validation"))
 
         agentConfig["collect_instance_metadata"] = True
         if config.has_option("Main", "collect_instance_metadata"):
-            agentConfig["collect_instance_metadata"] = _is_affirmative(config.get("Main", "collect_instance_metadata"))
+            agentConfig["collect_instance_metadata"] = _is_affirmative(
+                config.get("Main", "collect_instance_metadata"))
 
         agentConfig["proxy_forbid_method_switch"] = False
         if config.has_option("Main", "proxy_forbid_method_switch"):
-            agentConfig["proxy_forbid_method_switch"] = _is_affirmative(config.get("Main", "proxy_forbid_method_switch"))
+            agentConfig["proxy_forbid_method_switch"] = _is_affirmative(
+                config.get("Main", "proxy_forbid_method_switch"))
 
         agentConfig["collect_ec2_tags"] = False
         if config.has_option("Main", "collect_ec2_tags"):
-            agentConfig["collect_ec2_tags"] = _is_affirmative(config.get("Main", "collect_ec2_tags"))
+            agentConfig["collect_ec2_tags"] = _is_affirmative(
+                config.get("Main", "collect_ec2_tags"))
 
         agentConfig["utf8_decoding"] = False
         if config.has_option("Main", "utf8_decoding"):
@@ -523,7 +543,8 @@ def get_config(parse_args=True, cfg_path=None, options=None):
         sys.exit(2)
 
     except ConfigParser.NoOptionError, e:
-        sys.stderr.write('There are some items missing from your config file, but nothing fatal [%s]' % e)
+        sys.stderr.write(
+            'There are some items missing from your config file, but nothing fatal [%s]' % e)
 
     # Storing proxy settings in the agentConfig
     agentConfig['proxy_settings'] = get_proxy(agentConfig)
@@ -545,16 +566,20 @@ def get_system_stats():
 
     platf = sys.platform
 
-    if  Platform.is_linux(platf):
-        grep = subprocess.Popen(['grep', 'model name', '/proc/cpuinfo'], stdout=subprocess.PIPE, close_fds=True)
-        wc = subprocess.Popen(['wc', '-l'], stdin=grep.stdout, stdout=subprocess.PIPE, close_fds=True)
+    if Platform.is_linux(platf):
+        grep = subprocess.Popen(
+            ['grep', 'model name', '/proc/cpuinfo'], stdout=subprocess.PIPE, close_fds=True)
+        wc = subprocess.Popen(
+            ['wc', '-l'], stdin=grep.stdout, stdout=subprocess.PIPE, close_fds=True)
         systemStats['cpuCores'] = int(wc.communicate()[0])
 
     if Platform.is_darwin(platf):
-        systemStats['cpuCores'] = int(subprocess.Popen(['sysctl', 'hw.ncpu'], stdout=subprocess.PIPE, close_fds=True).communicate()[0].split(': ')[1])
+        systemStats['cpuCores'] = int(subprocess.Popen(
+            ['sysctl', 'hw.ncpu'], stdout=subprocess.PIPE, close_fds=True).communicate()[0].split(': ')[1])
 
     if Platform.is_freebsd(platf):
-        systemStats['cpuCores'] = int(subprocess.Popen(['sysctl', 'hw.ncpu'], stdout=subprocess.PIPE, close_fds=True).communicate()[0].split(': ')[1])
+        systemStats['cpuCores'] = int(subprocess.Popen(
+            ['sysctl', 'hw.ncpu'], stdout=subprocess.PIPE, close_fds=True).communicate()[0].split(': ')[1])
 
     if Platform.is_linux(platf):
         systemStats['nixV'] = platform.dist()
@@ -588,10 +613,11 @@ def set_win32_cert_path():
     else:
         cur_path = os.path.dirname(__file__)
         crt_path = os.path.join(cur_path, 'packaging', 'datadog-agent', 'win32',
-                'install_files', 'ca-certificates.crt')
+                                'install_files', 'ca-certificates.crt')
     import tornado.simple_httpclient
     log.info("Windows certificate path: %s" % crt_path)
     tornado.simple_httpclient._DEFAULT_CA_CERTS = crt_path
+
 
 def get_proxy(agentConfig, use_system_settings=False):
     proxy_settings = {}
@@ -609,7 +635,8 @@ def get_proxy(agentConfig, use_system_settings=False):
         proxy_settings['user'] = agentConfig.get('proxy_user', None)
         proxy_settings['password'] = agentConfig.get('proxy_password', None)
         proxy_settings['system_settings'] = False
-        log.debug("Proxy Settings: %s:%s@%s:%s" % (proxy_settings['user'], "*****", proxy_settings['host'], proxy_settings['port']))
+        log.debug("Proxy Settings: %s:%s@%s:%s" %
+                  (proxy_settings['user'], "*****", proxy_settings['host'], proxy_settings['port']))
         return proxy_settings
 
     # If no proxy configuration was specified in datadog.conf
@@ -635,11 +662,13 @@ def get_proxy(agentConfig, use_system_settings=False):
                 if len(creds) == 2:
                     proxy_settings['password'] = creds[1]
 
-            log.debug("Proxy Settings: %s:%s@%s:%s" % (proxy_settings['user'], "*****", proxy_settings['host'], proxy_settings['port']))
+            log.debug("Proxy Settings: %s:%s@%s:%s" % (
+                proxy_settings['user'], "*****", proxy_settings['host'], proxy_settings['port']))
             return proxy_settings
 
     except Exception, e:
-        log.debug("Error while trying to fetch proxy settings using urllib %s. Proxy is probably not set" % str(e))
+        log.debug(
+            "Error while trying to fetch proxy settings using urllib %s. Proxy is probably not set" % str(e))
 
     log.debug("No proxy configured")
 
@@ -724,9 +753,9 @@ def get_ssl_certificate(osname, filename):
         if os.path.exists(path):
             return path
 
-
     log.info("Certificate file NOT found at %s" % str(path))
     return None
+
 
 def check_yaml(conf_path):
     f = open(conf_path)
@@ -745,11 +774,13 @@ def check_yaml(conf_path):
                     valid_instances = False
                     break
         if not valid_instances:
-            raise Exception('You need to have at least one instance defined in the YAML file for this check')
+            raise Exception(
+                'You need to have at least one instance defined in the YAML file for this check')
         else:
             return check_config
     finally:
         f.close()
+
 
 def load_check_directory(agentConfig, hostname):
     ''' Return the initialized checks from checks.d, and a mapping of checks that failed to
@@ -762,7 +793,8 @@ def load_check_directory(agentConfig, hostname):
     deprecated_checks = {}
     agentConfig['checksd_hostname'] = hostname
 
-    deprecated_configs_enabled = [v for k,v in OLD_STYLE_PARAMETERS if len([l for l in agentConfig if l.startswith(k)]) > 0]
+    deprecated_configs_enabled = [
+        v for k, v in OLD_STYLE_PARAMETERS if len([l for l in agentConfig if l.startswith(k)]) > 0]
     for deprecated_config in deprecated_configs_enabled:
         msg = "Configuring %s in datadog.conf is not supported anymore. Please use conf.d" % deprecated_config
         deprecated_checks[deprecated_config] = {'error': msg, 'traceback': None}
@@ -781,7 +813,8 @@ def load_check_directory(agentConfig, hostname):
     try:
         confd_path = get_confd_path(osname)
     except PathNotFound, e:
-        log.error("No conf.d folder found at '%s' or in the directory where the Agent is currently deployed.\n" % e.args[0])
+        log.error(
+            "No conf.d folder found at '%s' or in the directory where the Agent is currently deployed.\n" % e.args[0])
         sys.exit(3)
 
     # We don't support old style configs anymore
@@ -792,7 +825,8 @@ def load_check_directory(agentConfig, hostname):
         check_name = os.path.basename(check).split('.')[0]
         check_config = None
         if check_name in initialized_checks or check_name in init_failed_checks:
-            log.debug('Skipping check %s because it has already been loaded from another location', check)
+            log.debug(
+                'Skipping check %s because it has already been loaded from another location', check)
             continue
 
         # Let's see if there is a conf.d for this check
@@ -824,7 +858,7 @@ def load_check_directory(agentConfig, hostname):
             except Exception, e:
                 log.exception("Unable to parse yaml config in %s" % conf_path)
                 traceback_message = traceback.format_exc()
-                init_failed_checks[check_name] = {'error':str(e), 'traceback':traceback_message}
+                init_failed_checks[check_name] = {'error': str(e), 'traceback': traceback_message}
                 continue
         else:
             # Compatibility code for the Nagios checks if it's still configured
@@ -835,7 +869,8 @@ def load_check_directory(agentConfig, hostname):
                     log.warning("Configuring Nagios in datadog.conf is deprecated "
                                 "and will be removed in a future version. "
                                 "Please use conf.d")
-                    check_config = {'instances':[dict((key, agentConfig[key]) for key in agentConfig if key in NAGIOS_OLD_CONF_KEYS)]}
+                    check_config = {
+                        'instances': [dict((key, agentConfig[key]) for key in agentConfig if key in NAGIOS_OLD_CONF_KEYS)]}
                 else:
                     continue
             else:
@@ -849,7 +884,7 @@ def load_check_directory(agentConfig, hostname):
         except Exception, e:
             traceback_message = traceback.format_exc()
             # There is a configuration file for that check but the module can't be imported
-            init_failed_checks[check_name] = {'error':e, 'traceback':traceback_message}
+            init_failed_checks[check_name] = {'error': e, 'traceback': traceback_message}
             log.exception('Unable to import check module %s.py from checks.d' % check_name)
             continue
 
@@ -896,7 +931,7 @@ def load_check_directory(agentConfig, hostname):
         except Exception, e:
             log.exception('Unable to initialize check %s' % check_name)
             traceback_message = traceback.format_exc()
-            init_failed_checks[check_name] = {'error':e, 'traceback':traceback_message}
+            init_failed_checks[check_name] = {'error': e, 'traceback': traceback_message}
         else:
             initialized_checks[check_name] = c
 
@@ -912,8 +947,8 @@ def load_check_directory(agentConfig, hostname):
     init_failed_checks.update(deprecated_checks)
     log.info('initialized checks.d checks: %s' % initialized_checks.keys())
     log.info('initialization failed checks.d checks: %s' % init_failed_checks.keys())
-    return {'initialized_checks':initialized_checks.values(),
-            'init_failed_checks':init_failed_checks,
+    return {'initialized_checks': initialized_checks.values(),
+            'init_failed_checks': init_failed_checks,
             }
 
 
@@ -957,10 +992,14 @@ def get_logging_config(cfg_path=None):
             'syslog_port': None,
         }
     else:
-        collector_log_location = os.path.join(_windows_commondata_path(), 'Datadog', 'logs', 'collector.log')
-        forwarder_log_location = os.path.join(_windows_commondata_path(), 'Datadog', 'logs', 'forwarder.log')
-        dogstatsd_log_location = os.path.join(_windows_commondata_path(), 'Datadog', 'logs', 'dogstatsd.log')
-        jmxfetch_log_file = os.path.join(_windows_commondata_path(), 'Datadog', 'logs', 'jmxfetch.log')
+        collector_log_location = os.path.join(
+            _windows_commondata_path(), 'Datadog', 'logs', 'collector.log')
+        forwarder_log_location = os.path.join(
+            _windows_commondata_path(), 'Datadog', 'logs', 'forwarder.log')
+        dogstatsd_log_location = os.path.join(
+            _windows_commondata_path(), 'Datadog', 'logs', 'dogstatsd.log')
+        jmxfetch_log_file = os.path.join(
+            _windows_commondata_path(), 'Datadog', 'logs', 'jmxfetch.log')
         logging_config = {
             'log_level': None,
             'windows_collector_log_file': collector_log_location,
@@ -1005,10 +1044,12 @@ def get_logging_config(cfg_path=None):
         logging_config['log_level'] = levels.get(config.get('Main', 'log_level'))
 
     if config.has_option('Main', 'log_to_syslog'):
-        logging_config['log_to_syslog'] = config.get('Main', 'log_to_syslog').strip().lower() in ['yes', 'true', 1]
+        logging_config['log_to_syslog'] = config.get(
+            'Main', 'log_to_syslog').strip().lower() in ['yes', 'true', 1]
 
     if config.has_option('Main', 'log_to_event_viewer'):
-        logging_config['log_to_event_viewer'] = config.get('Main', 'log_to_event_viewer').strip().lower() in ['yes', 'true', 1]
+        logging_config['log_to_event_viewer'] = config.get(
+            'Main', 'log_to_event_viewer').strip().lower() in ['yes', 'true', 1]
 
     if config.has_option('Main', 'syslog_host'):
         host = config.get('Main', 'syslog_host').strip()
@@ -1025,12 +1066,12 @@ def get_logging_config(cfg_path=None):
             logging_config['syslog_port'] = None
 
     if config.has_option('Main', 'disable_file_logging'):
-        logging_config['disable_file_logging'] = config.get('Main', 'disable_file_logging').strip().lower() in ['yes', 'true', 1]
+        logging_config['disable_file_logging'] = config.get(
+            'Main', 'disable_file_logging').strip().lower() in ['yes', 'true', 1]
     else:
         logging_config['disable_file_logging'] = False
 
     return logging_config
-
 
 
 def initialize_logging(logger_name):
@@ -1047,7 +1088,8 @@ def initialize_logging(logger_name):
             # make sure the log directory is writeable
             # NOTE: the entire directory needs to be writable so that rotation works
             if os.access(os.path.dirname(log_file), os.R_OK | os.W_OK):
-                file_handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=LOGGING_MAX_BYTES, backupCount=1)
+                file_handler = logging.handlers.RotatingFileHandler(
+                    log_file, maxBytes=LOGGING_MAX_BYTES, backupCount=1)
                 formatter = logging.Formatter(get_log_format(logger_name), get_log_date_format())
                 file_handler.setFormatter(formatter)
 
@@ -1070,7 +1112,8 @@ def initialize_logging(logger_name):
                         sys_log_addr = "/var/run/syslog"
 
                 handler = SysLogHandler(address=sys_log_addr, facility=SysLogHandler.LOG_DAEMON)
-                handler.setFormatter(logging.Formatter(get_syslog_format(logger_name), get_log_date_format()))
+                handler.setFormatter(
+                    logging.Formatter(get_syslog_format(logger_name), get_log_date_format()))
                 root_log = logging.getLogger()
                 root_log.addHandler(handler)
             except Exception, e:
@@ -1081,8 +1124,10 @@ def initialize_logging(logger_name):
         if get_os() == 'windows' and logging_config['log_to_event_viewer']:
             try:
                 from logging.handlers import NTEventLogHandler
-                nt_event_handler = NTEventLogHandler(logger_name,get_win32service_file('windows', 'win32service.pyd'), 'Application')
-                nt_event_handler.setFormatter(logging.Formatter(get_syslog_format(logger_name), get_log_date_format()))
+                nt_event_handler = NTEventLogHandler(
+                    logger_name, get_win32service_file('windows', 'win32service.pyd'), 'Application')
+                nt_event_handler.setFormatter(
+                    logging.Formatter(get_syslog_format(logger_name), get_log_date_format()))
                 nt_event_handler.setLevel(logging.ERROR)
                 app_log = logging.getLogger(logger_name)
                 app_log.addHandler(nt_event_handler)

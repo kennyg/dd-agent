@@ -5,6 +5,7 @@ logger = logging.getLogger(__file__)
 
 from tests.checks.common import load_check
 
+
 @attr(requires='fluentd')
 class TestFluentd(unittest.TestCase):
 
@@ -15,7 +16,7 @@ class TestFluentd(unittest.TestCase):
             "instances": [
                 {
                     "monitor_agent_url": "http://localhost:24220/api/plugins.json",
-                    "plugin_ids": [ "plg1" ],
+                    "plugin_ids": ["plg1"],
                 }
             ]
         }
@@ -47,7 +48,8 @@ class TestFluentd(unittest.TestCase):
 
         is_ok = [sc for sc in service_checks if sc['check'] == check.SERVICE_CHECK_NAME]
         self.assertEquals(len(is_ok), 1, service_checks)
-        self.assertEquals(set(is_ok[0]['tags']), set(['fluentd_host:localhost', 'fluentd_port:24220']), service_checks)
+        self.assertEquals(set(is_ok[0]['tags']), set(
+            ['fluentd_host:localhost', 'fluentd_port:24220']), service_checks)
 
     def test_fluentd_exception(self):
         config = {
@@ -56,7 +58,7 @@ class TestFluentd(unittest.TestCase):
             "instances": [
                 {
                     "monitor_agent_url": "http://localhost:24222/api/plugins.json",
-                    "plugin_ids": [ "plg2" ],
+                    "plugin_ids": ["plg2"],
                 }
             ]
         }

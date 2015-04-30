@@ -57,7 +57,8 @@ def load_check(name, config, agentConfig):
             else:
                 break
     if check_class is None:
-        raise Exception("Unable to import check %s. Missing a class that inherits AgentCheck" % name)
+        raise Exception(
+            "Unable to import check %s. Missing a class that inherits AgentCheck" % name)
 
     init_config = config.get('init_config', {})
     instances = config.get('instances')
@@ -98,7 +99,8 @@ def get_check(name, config_str):
             check_class = clsmember
             break
     if check_class is None:
-        raise Exception("Unable to import check %s. Missing a class that inherits AgentCheck" % name)
+        raise Exception(
+            "Unable to import check %s. Missing a class that inherits AgentCheck" % name)
 
     agentConfig = {
         'version': '0.1',
@@ -271,12 +273,13 @@ WARNINGS
         try:
             if count is not None:
                 self.assertEquals(len(candidates), count,
-                    "Needed exactly %d candidates, got %d" % (count, len(candidates))
-                )
+                                  "Needed exactly %d candidates, got %d" % (count, len(candidates))
+                                  )
             else:
                 self.assertTrue(len(candidates) >= at_least,
-                    "Needed at least %d candidates, got %d" % (at_least, len(candidates))
-                )
+                                "Needed at least %d candidates, got %d" % (
+                                    at_least, len(candidates))
+                                )
         except AssertionError:
             self.print_current_state()
             raise
@@ -331,8 +334,8 @@ WARNINGS
             self._candidates_size_assert(candidates, count=count)
         except AssertionError:
             log.error("Candidates size assertion for {0} (tag_prefix: {1}, "
-                "count: {2}, at_least: {3}) failed"\
-                .format(metric_name, tag_prefix, count, at_least))
+                      "count: {2}, at_least: {3}) failed"
+                      .format(metric_name, tag_prefix, count, at_least))
             raise
 
         for mtuple in self.metrics:
@@ -360,8 +363,8 @@ WARNINGS
             self._candidates_size_assert(candidates, count=count)
         except AssertionError:
             log.error("Candidates size assertion for {0} (tag: {1}, count={2},"
-                " at_least={3}) failed"\
-                .format(metric_name, tag, count, at_least))
+                      " at_least={3}) failed"
+                      .format(metric_name, tag, count, at_least))
             raise
 
         for mtuple in self.metrics:
@@ -371,7 +374,7 @@ WARNINGS
         log.debug("{0} FOUND !".format(metric_name))
 
     def assertServiceCheck(self, service_check_name, status=None, tags=None,
-        count=None, at_least=1):
+                           count=None, at_least=1):
         log.debug("Looking for service check {0}".format(service_check_name))
         if status is not None:
             log.debug(" * with status {0}".format(status))
@@ -395,8 +398,8 @@ WARNINGS
             self._candidates_size_assert(candidates, count=count, at_least=at_least)
         except AssertionError:
             log.error("Candidates size assertion for {0} (status: {1}, "
-                "tags: {2}, count: {3}, at_least: {4}) failed"\
-                .format(service_check_name, status, tags, count, at_least))
+                      "tags: {2}, count: {3}, at_least: {4}) failed"
+                      .format(service_check_name, status, tags, count, at_least))
             raise
 
         for sc in self.service_checks:

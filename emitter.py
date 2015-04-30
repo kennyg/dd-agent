@@ -24,12 +24,15 @@ requests_log = logging.getLogger("requests.packages.urllib3")
 requests_log.setLevel(logging.WARN)
 requests_log.propagate = True
 
-# From http://stackoverflow.com/questions/92438/stripping-non-printable-characters-from-a-string-in-python
-control_chars = ''.join(map(unichr, range(0,32) + range(127,160)))
+# From
+# http://stackoverflow.com/questions/92438/stripping-non-printable-characters-from-a-string-in-python
+control_chars = ''.join(map(unichr, range(0, 32) + range(127, 160)))
 control_char_re = re.compile('[%s]' % re.escape(control_chars))
+
 
 def remove_control_chars(s):
     return control_char_re.sub('', s)
+
 
 def http_emitter(message, log, agentConfig):
     "Send payload"
@@ -46,7 +49,8 @@ def http_emitter(message, log, agentConfig):
 
     zipped = zlib.compress(payload)
 
-    log.debug("payload_size=%d, compressed_size=%d, compression_ratio=%.3f" % (len(payload), len(zipped), float(len(payload))/float(len(zipped))))
+    log.debug("payload_size=%d, compressed_size=%d, compression_ratio=%.3f" %
+              (len(payload), len(zipped), float(len(payload)) / float(len(zipped))))
 
     apiKey = message.get('apiKey', None)
     if not apiKey:
@@ -80,4 +84,3 @@ def post_headers(agentConfig, payload):
         'Content-MD5': md5(payload).hexdigest(),
         'DD-Collector-Version': get_version()
     }
-    

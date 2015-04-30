@@ -28,6 +28,7 @@ def mocked_strftime(t):
 
 
 class FakeResponse(object):
+
     def __init__(self, status_code=200):
         self.status_code = status_code
         self.text = '{"case_id":1337}'
@@ -113,4 +114,5 @@ class FlareTest(unittest.TestCase):
             f.upload()
             raise Exception('Should fail before')
         except Exception, e:
-            self.assertEqual(str(e), "Your request is incorrect: Invalid inputs: 'API key unknown'")
+            self.assertEqual(
+                str(e), "Your request is incorrect: Invalid inputs: 'API key unknown'")

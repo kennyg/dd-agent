@@ -12,10 +12,12 @@ from checks import AgentCheck
 
 
 class Skip(Exception):
+
     """
     Raised by :class:`Jenkins` when it comes across
     a build or job that should be excluded from being checked.
     """
+
     def __init__(self, reason, dir_name):
         message = 'skipping build or job at %s because %s' % (dir_name, reason)
         Exception.__init__(self, message)
@@ -175,7 +177,8 @@ class Jenkins(AgentCheck):
 
                     if 'branch' in output:
                         tags.append('branch:%s' % output['branch'])
-                    self.gauge("jenkins.job.duration", float(output['duration'])/1000.0, tags=tags)
+                    self.gauge(
+                        "jenkins.job.duration", float(output['duration']) / 1000.0, tags=tags)
 
                     if output['result'] == 'SUCCESS':
                         self.increment('jenkins.job.success', tags=tags)

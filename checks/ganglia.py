@@ -2,6 +2,7 @@ from checks import Check
 import socket
 from cStringIO import StringIO
 
+
 class Ganglia(Check):
     BUFFER = 4096
     TIMEOUT = 0.5
@@ -46,4 +47,3 @@ class Ganglia(Check):
         except Exception:
             self.logger.exception("Unable to get ganglia data")
             return False
-

@@ -97,17 +97,21 @@ Win32_PerfFormattedData_W3SVC_WebService_attr = {
 
 
 class Mocked_Win32_PerfFormattedData_W3SVC_WebService(object):
+
     """
     Generate Mocked instance of Win32_PerfFormattedData_W3SVC_WebService
     """
+
     def __init__(self, **entries):
         self.__dict__.update(entries)
 
 
 class Mocked_WMI(Mock):
+
     """
     Mock WMI methods for test purpose
     """
+
     def Win32_PerfFormattedData_W3SVC_WebService(self):
         """
         Returns mock match Win32_PerfFormattedData_W3SVC_WebService

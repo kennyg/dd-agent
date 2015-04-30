@@ -10,6 +10,7 @@ from util import PidFile, is_valid_hostname, Platform, windows_friendly_colon_sp
 
 
 class TestConfig(unittest.TestCase):
+
     def testWhiteSpaceConfig(self):
         """Leading whitespace confuse ConfigParser
         """
@@ -61,10 +62,10 @@ class TestConfig(unittest.TestCase):
             u'i-123445',
             u'5dfsdfsdrrfsv',
             u'432498234234A'
-            u'234234235235235235', # Couldn't find anything in the RFC saying it's not valid
+            u'234234235235235235',  # Couldn't find anything in the RFC saying it's not valid
             u'A45fsdff045-dsflk4dfsdc.ret43tjssfd',
             u'4354sfsdkfj4TEfdlv56gdgdfRET.dsf-dg',
-            u'r'*255,
+            u'r' * 255,
         ]
 
         not_valid_hostnames = [
@@ -85,12 +86,14 @@ class TestConfig(unittest.TestCase):
         # Make the function run as if it was on windows
         func = Platform.is_win32
         try:
-            Platform.is_win32 = staticmethod(lambda : True)
+            Platform.is_win32 = staticmethod(lambda: True)
 
             test_cases = [
-                ("C:\\Documents\\Users\\script.py:C:\\Documents\\otherscript.py", ["C:\\Documents\\Users\\script.py","C:\\Documents\\otherscript.py"]),
-                ("C:\\Documents\\Users\\script.py:parser.py", ["C:\\Documents\\Users\\script.py","parser.py"])
-                ]
+                ("C:\\Documents\\Users\\script.py:C:\\Documents\\otherscript.py",
+                 ["C:\\Documents\\Users\\script.py", "C:\\Documents\\otherscript.py"]),
+                ("C:\\Documents\\Users\\script.py:parser.py",
+                 ["C:\\Documents\\Users\\script.py", "parser.py"])
+            ]
 
             for test_case, expected_result in test_cases:
                 self.assertEqual(windows_friendly_colon_split(test_case), expected_result)
@@ -108,4 +111,3 @@ class TestConfig(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

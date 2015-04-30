@@ -183,14 +183,16 @@ class TestRedis(AgentCheckTest):
             'port': SLAVE_HEALTHY_PORT
         })
         assert check, "%s service check not returned" % check_name
-        self.assertEqual(check['status'], AgentCheck.OK, "Value of %s service check should be OK" % check_name)
+        self.assertEqual(
+            check['status'], AgentCheck.OK, "Value of %s service check should be OK" % check_name)
 
         # Unhealthy host
         check = extract_check({
             'host': 'localhost',
             'port': SLAVE_UNHEALTHY_PORT
         })
-        self.assertEqual(check['status'], AgentCheck.CRITICAL, "Value of %s service check should be CRITICAL" % check_name)
+        self.assertEqual(check['status'], AgentCheck.CRITICAL,
+                         "Value of %s service check should be CRITICAL" % check_name)
 
     def test_redis_repl(self):
         master_instance = {
@@ -257,8 +259,7 @@ class TestRedis(AgentCheckTest):
 
         assert self.metrics, "No metrics returned"
         self.assertMetric("redis.slowlog.micros.max", tags=["command:SORT",
-            "redis_host:localhost", "redis_port:{0}".format(port)])
-
+                                                            "redis_host:localhost", "redis_port:{0}".format(port)])
 
     def test_custom_slowlog(self):
         port = NOAUTH_PORT
@@ -294,8 +295,7 @@ class TestRedis(AgentCheckTest):
         # Let's check that we didn't put more than one slowlog entry in the
         # payload, as specified in the above agent configuration
         self.assertMetric("redis.slowlog.micros.count", tags=["command:SORT",
-            "redis_host:localhost", "redis_port:{0}".format(port)], value=1.0)
-
+                                                              "redis_host:localhost", "redis_port:{0}".format(port)], value=1.0)
 
     def _sort_metrics(self, metrics):
         def sort_by(m):

@@ -38,6 +38,7 @@ FORMAT_TIME = lambda x: time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(x))
 SERVER_SERVICE_CHECK = 'supervisord.can_connect'
 PROCESS_SERVICE_CHECK = 'supervisord.process.status'
 
+
 class SupervisordCheck(AgentCheck):
 
     def check(self, instance):
@@ -61,7 +62,7 @@ class SupervisordCheck(AgentCheck):
                     try:
                         processes.append(supe.getProcessInfo(proc_name))
                     except xmlrpclib.Fault, e:
-                        if e.faultCode == 10: # bad process name
+                        if e.faultCode == 10:  # bad process name
                             self.warning('Process not found: %s' % proc_name)
                         else:
                             raise Exception('An error occurred while reading'
@@ -88,7 +89,7 @@ class SupervisordCheck(AgentCheck):
 
             raise Exception(msg)
         except xmlrpclib.ProtocolError, e:
-            if e.errcode == 401: # authorization error
+            if e.errcode == 401:  # authorization error
                 msg = 'Username or password to %s are incorrect.' % server_name
             else:
                 msg = "An error occurred while connecting to %s: "\
@@ -99,10 +100,9 @@ class SupervisordCheck(AgentCheck):
                                message=msg)
             raise Exception(msg)
 
-
         # If we're here, we were able to connect to the server
         self.service_check(SERVER_SERVICE_CHECK, AgentCheck.OK,
-            tags=server_service_check_tags)
+                           tags=server_service_check_tags)
 
         # Report service checks and uptime for each process
         for proc in processes:

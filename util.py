@@ -29,8 +29,8 @@ except ImportError:
     from yaml import Dumper as yDumper
 
 
-
-VALID_HOSTNAME_RFC_1123_PATTERN = re.compile(r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
+VALID_HOSTNAME_RFC_1123_PATTERN = re.compile(
+    r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$")
 MAX_HOSTNAME_LEN = 255
 COLON_NON_WIN_PATH = re.compile(':(?!\\\\)')
 
@@ -38,13 +38,16 @@ log = logging.getLogger(__name__)
 
 NumericTypes = (float, int, long)
 
+
 def plural(count):
     if count == 1:
         return ""
     return "s"
 
+
 def get_tornado_ioloop():
-        return ioloop.IOLoop.current()
+    return ioloop.IOLoop.current()
+
 
 def get_uuid():
     # Generate a unique name that will stay constant between
@@ -82,6 +85,7 @@ def headers(agentConfig):
         'Accept': 'text/html, */*',
     }
 
+
 def windows_friendly_colon_split(config_string):
     '''
     Perform a split by ':' on the config_string
@@ -92,6 +96,7 @@ def windows_friendly_colon_split(config_string):
         return COLON_NON_WIN_PATH.split(config_string)
     else:
         return config_string.split(':')
+
 
 def getTopIndex():
     macV = None
@@ -111,7 +116,7 @@ def isnan(val):
 
     # for py < 2.6, use a different check
     # http://stackoverflow.com/questions/944700/how-to-check-for-nan-in-python
-    return str(val) == str(1e400*0)
+    return str(val) == str(1e400 * 0)
 
 
 def cast_metric_val(val):
@@ -130,12 +135,15 @@ def cast_metric_val(val):
     return val
 
 _IDS = {}
+
+
 def get_next_id(name):
     global _IDS
     current_id = _IDS.get(name, 0)
     current_id += 1
     _IDS[name] = current_id
     return current_id
+
 
 def is_valid_hostname(hostname):
     if hostname.lower() in set([
@@ -147,7 +155,8 @@ def is_valid_hostname(hostname):
         log.warning("Hostname: %s is local" % hostname)
         return False
     if len(hostname) > MAX_HOSTNAME_LEN:
-        log.warning("Hostname: %s is too long (max length is  %s characters)" % (hostname, MAX_HOSTNAME_LEN))
+        log.warning("Hostname: %s is too long (max length is  %s characters)" %
+                    (hostname, MAX_HOSTNAME_LEN))
         return False
     if VALID_HOSTNAME_RFC_1123_PATTERN.match(hostname) is None:
         log.warning("Hostname: %s is not complying with RFC 1123" % hostname)
@@ -176,7 +185,7 @@ def get_hostname(config=None):
     if config_hostname and is_valid_hostname(config_hostname):
         return config_hostname
 
-    #Try to get GCE instance name
+    # Try to get GCE instance name
     if hostname is None:
         gce_hostname = GCE.get_hostname(config)
         if gce_hostname is not None:
@@ -216,18 +225,20 @@ def get_hostname(config=None):
             hostname = socket_hostname
 
     if hostname is None:
-        log.critical('Unable to reliably determine host name. You can define one in datadog.conf or in your hosts file')
-        raise Exception('Unable to reliably determine host name. You can define one in datadog.conf or in your hosts file')
+        log.critical(
+            'Unable to reliably determine host name. You can define one in datadog.conf or in your hosts file')
+        raise Exception(
+            'Unable to reliably determine host name. You can define one in datadog.conf or in your hosts file')
     else:
         return hostname
 
+
 class GCE(object):
     URL = "http://169.254.169.254/computeMetadata/v1/?recursive=true"
-    TIMEOUT = 0.1 # second
+    TIMEOUT = 0.1  # second
     SOURCE_TYPE_NAME = 'google cloud platform'
     metadata = None
     EXCLUDED_ATTRIBUTES = ["sshKeys"]
-
 
     @staticmethod
     def _get_metadata(agentConfig):
@@ -248,7 +259,7 @@ class GCE(object):
 
         try:
             opener = urllib2.build_opener()
-            opener.addheaders = [('X-Google-Metadata-Request','True')]
+            opener.addheaders = [('X-Google-Metadata-Request', 'True')]
             GCE.metadata = json.loads(opener.open(GCE.URL).read().strip())
 
         except Exception:
@@ -261,8 +272,6 @@ class GCE(object):
         except Exception:
             pass
         return GCE.metadata
-
-
 
     @staticmethod
     def get_tags(agentConfig):
@@ -280,7 +289,8 @@ class GCE(object):
 
             tags.extend(host_metadata['instance'].get('tags', []))
             tags.append('zone:%s' % host_metadata['instance']['zone'].split('/')[-1])
-            tags.append('instance-type:%s' % host_metadata['instance']['machineType'].split('/')[-1])
+            tags.append('instance-type:%s' %
+                        host_metadata['instance']['machineType'].split('/')[-1])
             tags.append('internal-hostname:%s' % host_metadata['instance']['hostname'])
             tags.append('instance-id:%s' % host_metadata['instance']['id'])
             tags.append('project:%s' % host_metadata['project']['projectId'])
@@ -301,14 +311,14 @@ class GCE(object):
             return None
 
 
-
 class EC2(object):
+
     """Retrieve EC2 metadata
     """
     EC2_METADATA_HOST = "http://169.254.169.254"
     METADATA_URL_BASE = EC2_METADATA_HOST + "/latest/meta-data"
     INSTANCE_IDENTITY_URL = EC2_METADATA_HOST + "/latest/dynamic/instance-identity/document"
-    TIMEOUT = 0.1 # second
+    TIMEOUT = 0.1  # second
     metadata = {}
 
     @staticmethod
@@ -325,13 +335,17 @@ class EC2(object):
             pass
 
         try:
-            iam_role = urllib2.urlopen(EC2.METADATA_URL_BASE + "/iam/security-credentials").read().strip()
-            iam_params = json.loads(urllib2.urlopen(EC2.METADATA_URL_BASE + "/iam/security-credentials" + "/" + unicode(iam_role)).read().strip())
-            instance_identity = json.loads(urllib2.urlopen(EC2.INSTANCE_IDENTITY_URL).read().strip())
+            iam_role = urllib2.urlopen(
+                EC2.METADATA_URL_BASE + "/iam/security-credentials").read().strip()
+            iam_params = json.loads(urllib2.urlopen(
+                EC2.METADATA_URL_BASE + "/iam/security-credentials" + "/" + unicode(iam_role)).read().strip())
+            instance_identity = json.loads(
+                urllib2.urlopen(EC2.INSTANCE_IDENTITY_URL).read().strip())
             region = instance_identity['region']
 
             import boto.ec2
-            connection = boto.ec2.connect_to_region(region, aws_access_key_id=iam_params['AccessKeyId'], aws_secret_access_key=iam_params['SecretAccessKey'], security_token=iam_params['Token'])
+            connection = boto.ec2.connect_to_region(region, aws_access_key_id=iam_params[
+                                                    'AccessKeyId'], aws_secret_access_key=iam_params['SecretAccessKey'], security_token=iam_params['Token'])
             tag_object = connection.get_all_tags({'resource-id': EC2.metadata['instance-id']})
 
             EC2_tags = [u"%s:%s" % (tag.name, tag.value) for tag in tag_object]
@@ -348,7 +362,6 @@ class EC2(object):
             pass
 
         return EC2_tags
-
 
     @staticmethod
     def get_metadata(agentConfig):
@@ -380,7 +393,8 @@ class EC2(object):
         for k in ('instance-id', 'hostname', 'local-hostname', 'public-hostname', 'ami-id', 'local-ipv4', 'public-keys', 'public-ipv4', 'reservation-id', 'security-groups'):
             try:
                 v = urllib2.urlopen(EC2.METADATA_URL_BASE + "/" + unicode(k)).read().strip()
-                assert type(v) in (types.StringType, types.UnicodeType) and len(v) > 0, "%s is not a string" % v
+                assert type(v) in (types.StringType, types.UnicodeType) and len(
+                    v) > 0, "%s is not a string" % v
                 EC2.metadata[k] = v
             except Exception:
                 pass
@@ -403,16 +417,18 @@ class EC2(object):
 
 
 class Watchdog(object):
+
     """Simple signal-based watchdog that will scuttle the current process
     if it has not been reset every N seconds, or if the processes exceeds
     a specified memory threshold.
     Can only be invoked once per process, so don't use with multiple threads.
     If you instantiate more than one, you're also asking for trouble.
     """
-    def __init__(self, duration, max_mem_mb = None):
+
+    def __init__(self, duration, max_mem_mb=None):
         import resource
 
-        #Set the duration
+        # Set the duration
         self._duration = int(duration)
         signal.signal(signal.SIGALRM, Watchdog.self_destruct)
 
@@ -434,7 +450,6 @@ class Watchdog(object):
         finally:
             os.kill(os.getpid(), signal.SIGKILL)
 
-
     def reset(self):
         # self destruct if using too much memory, as tornado will swallow MemoryErrors
         if self.memory_limit_enabled:
@@ -447,10 +462,10 @@ class Watchdog(object):
 
 
 class PidFile(object):
+
     """ A small helper class for pidfiles. """
 
     PID_DIR = '/var/run/dd-agent'
-
 
     def __init__(self, program, pid_dir=None):
         self.pid_file = "%s.pid" % program
@@ -482,7 +497,6 @@ class PidFile(object):
             log.error("Cannot save pid file anywhere")
             raise Exception("Cannot save pid file anywhere")
 
-
     def clean(self):
         try:
             path = self.get_path()
@@ -492,7 +506,6 @@ class PidFile(object):
         except Exception:
             log.warn("Could not clean up pid file")
             return False
-
 
     def get_pid(self):
         "Retrieve the actual pid"
@@ -507,6 +520,7 @@ class PidFile(object):
 
 
 class LaconicFilter(logging.Filter):
+
     """
     Filters messages, only print them once while keeping memory under control
     """
@@ -533,7 +547,9 @@ class LaconicFilter(logging.Filter):
         except Exception:
             return 1
 
+
 class Timer(object):
+
     """ Helper class """
 
     def __init__(self):
@@ -549,7 +565,7 @@ class Timer(object):
 
     def step(self):
         now = self._now()
-        step =  now - self.last
+        step = now - self.last
         self.last = now
         return step
 
@@ -558,6 +574,7 @@ class Timer(object):
 
 
 class Platform(object):
+
     """
     Return information about the given platform.
     """
@@ -598,7 +615,7 @@ class Platform(object):
         return (Platform.is_darwin()
                 or Platform.is_linux()
                 or Platform.is_freebsd()
-        )
+                )
 
     @staticmethod
     def is_win32(name=None):
@@ -612,6 +629,7 @@ class Platform(object):
 """
 Iterable Recipes
 """
+
 
 def chunks(iterable, chunk_size):
     """Generate sequences of `chunk_size` elements from `iterable`."""

@@ -33,6 +33,7 @@ class NagiosTestCase(AgentCheckTest):
 
 
 class EventLogTailerTestCase(NagiosTestCase):
+
     def test_line_parser(self):
         """
         Parse lines
@@ -62,7 +63,8 @@ class EventLogTailerTestCase(NagiosTestCase):
                     assert event["event_state"] in ("CRITICAL", "WARNING", "UNKNOWN", "OK"), line
                     assert event["check_name"] is not None
                 elif t == "SERVICE NOTIFICATION":
-                    assert event["event_state"] in ("ACKNOWLEDGEMENT", "OK", "CRITICAL", "WARNING", "ACKNOWLEDGEMENT (CRITICAL)"), line
+                    assert event["event_state"] in (
+                        "ACKNOWLEDGEMENT", "OK", "CRITICAL", "WARNING", "ACKNOWLEDGEMENT (CRITICAL)"), line
                 elif t == "SERVICE FLAPPING ALERT":
                     assert event["flap_start_stop"] in ("STARTED", "STOPPED"), line
                     assert event["check_name"] is not None
@@ -197,7 +199,8 @@ class PerfDataTailerTestCase(NagiosTestCase):
         """
         self.log_file = tempfile.NamedTemporaryFile()
         config = self.get_config(
-            '\n'.join(["service_perfdata_file=%s" % self.log_file.name, "service_perfdata_file_template=DATATYPE::SERVICEPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tSERVICEDESC::$SERVICEDESC$\tSERVICEPERFDATA::$SERVICEPERFDATA$\tSERVICECHECKCOMMAND::$SERVICECHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$\tSERVICESTATE::$SERVICESTATE$\tSERVICESTATETYPE::$SERVICESTATETYPE$"]),
+            '\n'.join(["service_perfdata_file=%s" % self.log_file.name,
+                       "service_perfdata_file_template=DATATYPE::SERVICEPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tSERVICEDESC::$SERVICEDESC$\tSERVICEPERFDATA::$SERVICEPERFDATA$\tSERVICECHECKCOMMAND::$SERVICECHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$\tSERVICESTATE::$SERVICESTATE$\tSERVICESTATETYPE::$SERVICESTATETYPE$"]),
             service_perf=True)
         self.run_check(config)
 
@@ -206,7 +209,8 @@ class PerfDataTailerTestCase(NagiosTestCase):
         self.run_check(config)
 
         # Test metrics
-        service_perf_data = self.DB_LOG_DATA[0][4][17:]  # 'time=0.06 db0=33;180;190;0;200 db1=1;150;190;0;200 db2=0;120;290;1;200 db3=0;110;195;5;100'
+        # 'time=0.06 db0=33;180;190;0;200 db1=1;150;190;0;200 db2=0;120;290;1;200 db3=0;110;195;5;100'
+        service_perf_data = self.DB_LOG_DATA[0][4][17:]
 
         for metric_data in service_perf_data.split(" "):
             name, info = metric_data.split("=")
@@ -231,7 +235,8 @@ class PerfDataTailerTestCase(NagiosTestCase):
         """
         self.log_file = tempfile.NamedTemporaryFile()
         config = self.get_config(
-            '\n'.join(["service_perfdata_file=%s" % self.log_file.name, "service_perfdata_file_template=DATATYPE::SERVICEPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tSERVICEDESC::$SERVICEDESC$\tSERVICEPERFDATA::$SERVICEPERFDATA$\tSERVICECHECKCOMMAND::$SERVICECHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$\tSERVICESTATE::$SERVICESTATE$\tSERVICESTATETYPE::$SERVICESTATETYPE$",]),
+            '\n'.join(["service_perfdata_file=%s" % self.log_file.name,
+                       "service_perfdata_file_template=DATATYPE::SERVICEPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tSERVICEDESC::$SERVICEDESC$\tSERVICEPERFDATA::$SERVICEPERFDATA$\tSERVICECHECKCOMMAND::$SERVICECHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$\tSERVICESTATE::$SERVICESTATE$\tSERVICESTATETYPE::$SERVICESTATETYPE$", ]),
             service_perf=True)
         self.run_check(config)
 
@@ -264,7 +269,8 @@ class PerfDataTailerTestCase(NagiosTestCase):
         """
         self.log_file = tempfile.NamedTemporaryFile()
         config = self.get_config(
-            '\n'.join(["host_perfdata_file=%s" % self.log_file.name, "host_perfdata_file_template=DATATYPE::HOSTPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tHOSTPERFDATA::$HOSTPERFDATA$\tHOSTCHECKCOMMAND::$HOSTCHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$"]),
+            '\n'.join(["host_perfdata_file=%s" % self.log_file.name,
+                       "host_perfdata_file_template=DATATYPE::HOSTPERFDATA\tTIMET::$TIMET$\tHOSTNAME::$HOSTNAME$\tHOSTPERFDATA::$HOSTPERFDATA$\tHOSTCHECKCOMMAND::$HOSTCHECKCOMMAND$\tHOSTSTATE::$HOSTSTATE$\tHOSTSTATETYPE::$HOSTSTATETYPE$"]),
             host_perf=True)
         self.run_check(config)
 
@@ -359,7 +365,8 @@ class PerfDataTailerTestCase(NagiosTestCase):
         self.log_file = tempfile.NamedTemporaryFile()
         perfdata_file = tempfile.NamedTemporaryFile()
         config = self.get_config(
-            '\n'.join(["host_perfdata_file=%s" % perfdata_file.name, "host_perfdata_file_template=%s" % self.NAGIOS_TEST_HOST_TEMPLATE]),
+            '\n'.join(["host_perfdata_file=%s" % perfdata_file.name,
+                       "host_perfdata_file_template=%s" % self.NAGIOS_TEST_HOST_TEMPLATE]),
             host_perf=True)
         self.run_check(config)
 

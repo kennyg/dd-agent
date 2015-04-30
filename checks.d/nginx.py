@@ -10,7 +10,9 @@ from checks import AgentCheck
 # 3rd party
 import simplejson as json
 
+
 class Nginx(AgentCheck):
+
     """Tracks basic nginx metrics via the status module
     * number of connections
     * number of requets per second
@@ -25,6 +27,7 @@ class Nginx(AgentCheck):
     Reading: 0 Writing: 2 Waiting: 6
 
     """
+
     def check(self, instance):
         if 'nginx_status_url' not in instance:
             raise Exception('NginX instance missing "nginx_status_url" value.')
@@ -53,7 +56,7 @@ class Nginx(AgentCheck):
 
         auth = None
         if 'user' in instance and 'password' in instance:
-           auth = (instance['user'], instance['password'])
+            auth = (instance['user'], instance['password'])
 
         # Submit a service check for status page availability.
         parsed_url = urlparse.urlparse(url)

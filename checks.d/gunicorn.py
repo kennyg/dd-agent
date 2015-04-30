@@ -14,6 +14,7 @@ import time
 # 3rd party
 import psutil
 
+
 class GUnicornCheck(AgentCheck):
 
     # Config
@@ -50,7 +51,7 @@ class GUnicornCheck(AgentCheck):
         msg = "%s working and %s idle workers for %s" % (working, idle, proc_name)
         status = AgentCheck.CRITICAL if working == 0 and idle == 0 else AgentCheck.OK
 
-        self.service_check(self.SVC_NAME, status, tags=['app:'+ proc_name], message=msg)
+        self.service_check(self.SVC_NAME, status, tags=['app:' + proc_name], message=msg)
 
         # Submit the data.
         self.log.debug("instance %s procs - working:%s idle:%s" % (proc_name, working, idle))
@@ -99,14 +100,16 @@ class GUnicornCheck(AgentCheck):
     def _get_master_proc_by_name(self, name):
         """ Return a psutil process for the master gunicorn process with the given name. """
         master_name = GUnicornCheck._get_master_proc_name(name)
-        master_procs = [p for p in psutil.process_iter() if p.cmdline() and p.cmdline()[0] == master_name]
+        master_procs = [
+            p for p in psutil.process_iter() if p.cmdline() and p.cmdline()[0] == master_name]
         if len(master_procs) == 0:
             # process not found, it's dead.
-            self.service_check(self.SVC_NAME, AgentCheck.CRITICAL, tags=['app:'+ name],
-                                message="No gunicorn process with name %s found" % name)
+            self.service_check(self.SVC_NAME, AgentCheck.CRITICAL, tags=['app:' + name],
+                               message="No gunicorn process with name %s found" % name)
             raise GUnicornCheckError("Found no master process with name: %s" % master_name)
         elif len(master_procs) > 1:
-            raise GUnicornCheckError("Found more than one master process with name: %s" % master_name)
+            raise GUnicornCheckError(
+                "Found more than one master process with name: %s" % master_name)
         else:
             return master_procs[0]
 
@@ -117,7 +120,7 @@ class GUnicornCheck(AgentCheck):
         # root     22976  0.1  0.1  60364 13424 ?        Ss   19:30   0:00 gunicorn: master [web1]
         # web      22984 20.7  2.3 521924 176136 ?       Sl   19:30   1:58 gunicorn: worker [web1]
         # web      22985 26.4  6.1 795288 449596 ?       Sl   19:30   2:32 gunicorn: worker [web1]
-        return  "gunicorn: master [%s]" % name
+        return "gunicorn: master [%s]" % name
 
 
 class GUnicornCheckError(Exception):

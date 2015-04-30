@@ -3,6 +3,7 @@ from nose.plugins.attrib import attr
 from tests.checks.common import load_check
 from checks import AgentCheck
 
+
 @attr(requires='ssh')
 class SshTestCase(unittest.TestCase):
 
@@ -17,7 +18,7 @@ class SshTestCase(unittest.TestCase):
                 'private_key_file': '',
                 'add_missing_keys': True
             },
-            {
+                {
                 'host': 'localhost',
                 'port': 22,
                 'username': 'test',
@@ -26,7 +27,7 @@ class SshTestCase(unittest.TestCase):
                 'private_key_file': '',
                 'add_missing_keys': True
             },
-            {
+                {
                 'host': 'wronghost',
                 'port': 22,
                 'username': 'datadog01',
@@ -41,7 +42,7 @@ class SshTestCase(unittest.TestCase):
         agentConfig = {}
         self.check = load_check('ssh_check', config, agentConfig)
 
-        #Testing that connection will work
+        # Testing that connection will work
         self.check.check(config['instances'][0])
 
         service = self.check.get_service_checks()
@@ -49,10 +50,10 @@ class SshTestCase(unittest.TestCase):
         self.assertEqual(service[0].get('message'), None)
         self.assertEqual(service[0].get('tags'), ["instance:io.smashthestack.org-22"])
 
-        #Testing that bad authentication will raise exception
+        # Testing that bad authentication will raise exception
         self.assertRaises(Exception, self.check.check, config['instances'][1])
-        #Testing that bad hostname will raise exception
+        # Testing that bad hostname will raise exception
         self.assertRaises(Exception, self.check.check, config['instances'][2])
         service_fail = self.check.get_service_checks()
-        #Check failure status
+        # Check failure status
         self.assertEqual(service_fail[0].get('status'), AgentCheck.CRITICAL)

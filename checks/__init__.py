@@ -26,11 +26,22 @@ import yaml
 log = logging.getLogger(__name__)
 
 # Konstants
-class CheckException(Exception): pass
-class Infinity(CheckException): pass
-class NaN(CheckException): pass
-class UnknownValue(CheckException): pass
 
+
+class CheckException(Exception):
+    pass
+
+
+class Infinity(CheckException):
+    pass
+
+
+class NaN(CheckException):
+    pass
+
+
+class UnknownValue(CheckException):
+    pass
 
 
 #==============================================================================
@@ -41,6 +52,7 @@ class UnknownValue(CheckException): pass
 # of the agent.
 #==============================================================================
 class Check(object):
+
     """
     (Abstract) class for all checks with the ability to:
     * store 1 (and only 1) sample for gauges per metric/tag combination
@@ -49,7 +61,6 @@ class Check(object):
 
     """
 
-
     def __init__(self, logger):
         # where to store samples, indexed by metric_name
         # metric_name: {("sorted", "tags"): [(ts, value), (ts, value)],
@@ -57,7 +68,7 @@ class Check(object):
         #               None: [(ts, value), (ts, value)]}
         #                 untagged values are indexed by None
         self._sample_store = {}
-        self._counters = {} # metric_name: bool
+        self._counters = {}  # metric_name: bool
         self.logger = logger
         try:
             self.logger.addFilter(LaconicFilter())
@@ -110,7 +121,7 @@ class Check(object):
 
     def is_gauge(self, metric):
         return self.is_metric(metric) and \
-               not self.is_counter(metric)
+            not self.is_counter(metric)
 
     def get_metric_names(self):
         "Get all metric names"
@@ -151,9 +162,11 @@ class Check(object):
             if self._sample_store[metric].get(key) is None:
                 self._sample_store[metric][key] = [(timestamp, value, hostname, device_name)]
             else:
-                self._sample_store[metric][key] = self._sample_store[metric][key][-1:] + [(timestamp, value, hostname, device_name)]
+                self._sample_store[metric][key] = self._sample_store[metric][
+                    key][-1:] + [(timestamp, value, hostname, device_name)]
         else:
-            raise CheckException("%s must be either gauge or counter, skipping sample at %s" % (metric, time.ctime(timestamp)))
+            raise CheckException(
+                "%s must be either gauge or counter, skipping sample at %s" % (metric, time.ctime(timestamp)))
 
         if self.is_gauge(metric):
             # store[metric][tags] = (ts, val) - only 1 value allowed
@@ -199,7 +212,8 @@ class Check(object):
             raise UnknownValue()
 
         elif self.is_counter(metric) and len(self._sample_store[metric][key]) >= 2:
-            res = self._rate(self._sample_store[metric][key][-2], self._sample_store[metric][key][-1])
+            res = self._rate(
+                self._sample_store[metric][key][-2], self._sample_store[metric][key][-1])
             if expire:
                 del self._sample_store[metric][key][:-1]
             return res
@@ -250,7 +264,8 @@ class Check(object):
                 for key in self._sample_store[m]:
                     tags, device_name = key
                     try:
-                        ts, val, hostname, device_name = self.get_sample_with_timestamp(m, tags, device_name, expire)
+                        ts, val, hostname, device_name = self.get_sample_with_timestamp(
+                            m, tags, device_name, expire)
                     except UnknownValue:
                         continue
                     attributes = {}
@@ -264,6 +279,7 @@ class Check(object):
             except Exception:
                 pass
         return metrics
+
 
 class AgentCheck(object):
     OK, WARNING, CRITICAL, UNKNOWN = (0, 1, 2, 3)
@@ -359,7 +375,7 @@ class AgentCheck(object):
         self.aggregator.submit_count(metric, value, tags, hostname, device_name)
 
     def monotonic_count(self, metric, value=0, tags=None,
-                      hostname=None, device_name=None):
+                        hostname=None, device_name=None):
         """
         Submits a raw count with optional tags, hostname and device name
         based on increasing counter values. E.g. 1, 3, 5, 7 will submit
@@ -455,7 +471,7 @@ class AgentCheck(object):
         if hostname is None:
             hostname = self.hostname
         self.service_checks.append(create_service_check(check_name, status,
-            tags, timestamp, hostname, check_run_id, message))
+                                                        tags, timestamp, hostname, check_run_id, message))
 
     def has_events(self):
         """
@@ -537,28 +553,29 @@ class AgentCheck(object):
         for i, instance in enumerate(self.instances):
             try:
                 min_collection_interval = instance.get('min_collection_interval',
-                    self.init_config.get('min_collection_interval', self.DEFAULT_MIN_COLLECTION_INTERVAL))
+                                                       self.init_config.get('min_collection_interval', self.DEFAULT_MIN_COLLECTION_INTERVAL))
                 now = time.time()
                 if now - self.last_collection_time[i] < min_collection_interval:
-                    self.log.debug("Not running instance #{0} of check {1} as it ran less than {2}s ago".format(i, self.name, min_collection_interval))
+                    self.log.debug("Not running instance #{0} of check {1} as it ran less than {2}s ago".format(
+                        i, self.name, min_collection_interval))
                     continue
 
                 self.last_collection_time[i] = now
                 self.check(copy.deepcopy(instance))
                 if self.has_warnings():
                     instance_status = check_status.InstanceStatus(i,
-                        check_status.STATUS_WARNING,
-                        warnings=self.get_warnings()
-                    )
+                                                                  check_status.STATUS_WARNING,
+                                                                  warnings=self.get_warnings()
+                                                                  )
                 else:
                     instance_status = check_status.InstanceStatus(i, check_status.STATUS_OK)
             except Exception, e:
                 self.log.exception("Check '%s' instance #%s failed" % (self.name, i))
                 instance_status = check_status.InstanceStatus(i,
-                    check_status.STATUS_ERROR,
-                    error=str(e),
-                    tb=traceback.format_exc()
-                )
+                                                              check_status.STATUS_ERROR,
+                                                              error=str(e),
+                                                              tb=traceback.format_exc()
+                                                              )
             instance_statuses.append(instance_status)
         return instance_statuses
 
@@ -600,7 +617,7 @@ class AgentCheck(object):
             check = cls(check_name, config.get('init_config') or {}, agentConfig or {})
         return check, config.get('instances', [])
 
-    def normalize(self, metric, prefix=None, fix_case = False):
+    def normalize(self, metric, prefix=None, fix_case=False):
         """
         Turn a metric into a well-formed metric name
         prefix.b.c
@@ -635,7 +652,6 @@ class AgentCheck(object):
     METRIC_REPLACEMENT = re.compile(r'([^a-zA-Z0-9_.]+)|(^[^a-zA-Z]+)')
     DOT_UNDERSCORE_CLEANUP = re.compile(r'_*\._*')
 
-
     def convert_to_underscore_separated(self, name):
         """
         Convert from CamelCase to camel_case
@@ -658,8 +674,9 @@ class AgentCheck(object):
         else:
             return cast(val)
 
+
 def agent_formatter(metric, value, timestamp, tags, hostname, device_name=None,
-                                                metric_type=None, interval=None):
+                    metric_type=None, interval=None):
     """ Formats metrics coming from the MetricsAggregator. Will look like:
      (metric, timestamp, value, {"tags": ["tag1", "tag2"], ...})
     """
@@ -683,7 +700,7 @@ def agent_formatter(metric, value, timestamp, tags, hostname, device_name=None,
 
 
 def create_service_check(check_name, status, tags=None, timestamp=None,
-                  hostname=None, check_run_id=None, message=None):
+                         hostname=None, check_run_id=None, message=None):
     """ Create a service_check dict. See AgentCheck.service_check() for
         docs on the parameters.
     """

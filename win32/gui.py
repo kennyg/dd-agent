@@ -9,7 +9,7 @@ import sys
 import os
 import os.path as osp
 import webbrowser
-import thread # To manage the windows process asynchronously
+import thread  # To manage the windows process asynchronously
 import logging
 import pickle
 import platform
@@ -36,7 +36,7 @@ spyderlib.baseconfig.IMG_PATH = [""]
 # Datadog
 from util import get_os, yLoader
 from config import (get_confd_path, get_config_path, get_config,
-    _windows_commondata_path, get_version)
+                    _windows_commondata_path, get_version)
 from checks.check_status import DogstatsdStatus, ForwarderStatus, CollectorStatus, logger_info
 
 # 3rd Party
@@ -51,7 +51,7 @@ EXCLUDED_WINDOWS_CHECKS = [
     'hdfs', 'kafka_consumer', 'marathon', 'mcache',
     'mesos', 'network', 'postfix', 'process',
     'gunicorn', 'zk', 'ssh_check'
-    ]
+]
 
 MAIN_WINDOW_TITLE = "Datadog Agent Manager"
 
@@ -63,11 +63,11 @@ DOGSTATSD_LOG_FILE = os.path.join(_windows_commondata_path(), 'Datadog', 'logs',
 JMXFETCH_LOG_FILE = os.path.join(_windows_commondata_path(), 'Datadog', 'logs', 'jmxfetch.log')
 
 HUMAN_SERVICE_STATUS = {
-    win32service.SERVICE_RUNNING : 'Service is running',
-    win32service.SERVICE_START_PENDING : 'Service is starting',
-    win32service.SERVICE_STOP_PENDING : 'Service is stopping',
-    win32service.SERVICE_STOPPED : 'Service is stopped',
-    "Unknown" : "Cannot get service status",
+    win32service.SERVICE_RUNNING: 'Service is running',
+    win32service.SERVICE_START_PENDING: 'Service is starting',
+    win32service.SERVICE_STOP_PENDING: 'Service is stopping',
+    win32service.SERVICE_STOPPED: 'Service is stopped',
+    "Unknown": "Cannot get service status",
 }
 
 REFRESH_PERIOD = 5000
@@ -85,6 +85,7 @@ SYSTEM_TRAY_MENU = [
     (EXIT_MANAGER, lambda: sys.exit(0)),
 ]
 
+
 def get_checks():
     checks = {}
     conf_d_directory = get_confd_path(get_os())
@@ -98,7 +99,7 @@ def get_checks():
 
         agent_check = AgentCheck(filename, ext, conf_d_directory)
         if (agent_check.enabled or agent_check.module_name not in checks or
-            (not agent_check.is_example and not checks[agent_check.module_name].enabled)):
+                (not agent_check.is_example and not checks[agent_check.module_name].enabled)):
             checks[agent_check.module_name] = agent_check
 
     checks_list = checks.values()
@@ -106,7 +107,9 @@ def get_checks():
 
     return checks_list
 
+
 class EditorFile(object):
+
     def __init__(self, file_path, description):
         self.file_path = file_path
         self.description = description
@@ -116,7 +119,7 @@ class EditorFile(object):
 
     def save(self, content):
         try:
-            f = open(self.file_path,'w')
+            f = open(self.file_path, 'w')
             f.write(content)
             self.content = content
             info_popup("File saved.")
@@ -124,21 +127,30 @@ class EditorFile(object):
             warning_popup("Unable to save file: \n %s" % str(e))
             raise
 
+
 class ForwarderLogFile(EditorFile):
+
     def __init__(self):
         EditorFile.__init__(self, FORWARDER_LOG_FILE, "Forwarder log file")
 
+
 class CollectorLogFile(EditorFile):
+
     def __init__(self):
         EditorFile.__init__(self, COLLECTOR_LOG_FILE, "Collector log file")
 
+
 class DogstatsdLogFile(EditorFile):
+
     def __init__(self):
         EditorFile.__init__(self, DOGSTATSD_LOG_FILE, "Dogstatsd log file")
 
+
 class JMXFetchLogFile(EditorFile):
+
     def __init__(self):
         EditorFile.__init__(self, JMXFETCH_LOG_FILE, "JMX Fetch log file")
+
 
 class DatadogConf(EditorFile):
 
@@ -153,7 +165,7 @@ class DatadogConf(EditorFile):
     def check_api_key(self, editor):
         if self.api_key is None:
             api_key, ok = QInputDialog.getText(None, "Add your API KEY",
-            "You must first set your api key in this file. You can find it here: https://app.datadoghq.com/account/settings#api")
+                                               "You must first set your api key in this file. You can find it here: https://app.datadoghq.com/account/settings#api")
             if ok and api_key:
                 new_content = []
                 for line in self.content.splitlines():
@@ -172,12 +184,15 @@ class DatadogConf(EditorFile):
             else:
                 self.check_api_key(editor)
 
+
 class AgentCheck(EditorFile):
+
     def __init__(self, filename, ext, conf_d_directory):
         file_path = osp.join(conf_d_directory, filename)
         self.module_name = filename.split('.')[0]
 
-        EditorFile.__init__(self, file_path, description=self.module_name.replace("_", " ").title())
+        EditorFile.__init__(
+            self, file_path, description=self.module_name.replace("_", " ").title())
 
         self.enabled = ext == '.yaml'
         self.is_example = ext == '.example'
@@ -198,7 +213,9 @@ class AgentCheck(EditorFile):
         check_yaml_syntax(content)
         EditorFile.save(self, content)
 
+
 class PropertiesWidget(QWidget):
+
     def __init__(self, parent):
         QWidget.__init__(self, parent)
         font = QFont(get_family(MONOSPACE), 10, QFont.Normal)
@@ -237,22 +254,21 @@ class PropertiesWidget(QWidget):
         self.group_code.setLayout(layout)
 
         self.enable_button = QPushButton(get_icon("apply.png"),
-                                      "Enable", self)
+                                         "Enable", self)
 
         self.save_button = QPushButton(get_icon("filesave.png"),
-                                      "Save", self)
+                                       "Save", self)
 
         self.disable_button = QPushButton(get_icon("delete.png"),
-                                      "Disable", self)
+                                          "Disable", self)
 
         self.refresh_button = QPushButton(get_icon("restart.png"),
-                                      "Refresh", self)
+                                          "Refresh", self)
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.save_button)
         hlayout.addWidget(self.enable_button)
         hlayout.addWidget(self.disable_button)
         hlayout.addWidget(self.refresh_button)
-
 
         vlayout = QVBoxLayout()
         vlayout.addWidget(self.group_desc)
@@ -310,7 +326,9 @@ class PropertiesWidget(QWidget):
         except Exception:
             self.editor.set_text("Log file not found")
 
+
 class HTMLWindow(QTextEdit):
+
     def __init__(self, parent=None):
         QTextEdit.__init__(self, parent)
         self.setReadOnly(True)
@@ -331,13 +349,14 @@ class HTMLWindow(QTextEdit):
                 dogstatsd=dogstatsd_status.to_dict(),
                 forwarder=forwarder_status.to_dict(),
                 collector=collector_status.to_dict(),
-                )
+            )
             return generated_template
         except Exception:
             return ("Unable to fetch latest status")
 
 
 class MainWindow(QSplitter):
+
     def __init__(self, parent=None):
 
         QSplitter.__init__(self, parent)
@@ -346,10 +365,12 @@ class MainWindow(QSplitter):
 
         self.sysTray = SystemTray(self)
 
-        self.connect(self.sysTray, SIGNAL("activated(QSystemTrayIcon::ActivationReason)"), self.__icon_activated)
+        self.connect(self.sysTray, SIGNAL(
+            "activated(QSystemTrayIcon::ActivationReason)"), self.__icon_activated)
 
         checks = get_checks()
-        datadog_conf = DatadogConf(get_config_path(), description="Agent settings file: datadog.conf")
+        datadog_conf = DatadogConf(
+            get_config_path(), description="Agent settings file: datadog.conf")
 
         self.forwarder_log_file = ForwarderLogFile()
         self.collector_log_file = CollectorLogFile()
@@ -357,41 +378,43 @@ class MainWindow(QSplitter):
         self.jmxfetch_log_file = JMXFetchLogFile()
 
         listwidget = QListWidget(self)
-        listwidget.addItems([osp.basename(check.module_name).replace("_", " ").title() for check in checks])
+        listwidget.addItems(
+            [osp.basename(check.module_name).replace("_", " ").title() for check in checks])
 
         self.properties = PropertiesWidget(self)
 
         self.setting_button = QPushButton(get_icon("info.png"),
-                                      "Logs and Status", self)
+                                          "Logs and Status", self)
         self.menu_button = QPushButton(get_icon("settings.png"),
-                                      "Actions", self)
+                                       "Actions", self)
         self.settings = [
             ("Forwarder Logs", lambda: [self.properties.set_log_file(self.forwarder_log_file),
-                self.show_html(self.properties.group_code, self.properties.html_window, False)]),
+                                        self.show_html(self.properties.group_code, self.properties.html_window, False)]),
             ("Collector Logs", lambda: [self.properties.set_log_file(self.collector_log_file),
-                self.show_html(self.properties.group_code, self.properties.html_window, False)]),
+                                        self.show_html(self.properties.group_code, self.properties.html_window, False)]),
             ("Dogstatsd Logs", lambda: [self.properties.set_log_file(self.dogstatsd_log_file),
-                self.show_html(self.properties.group_code, self.properties.html_window, False)]),
+                                        self.show_html(self.properties.group_code, self.properties.html_window, False)]),
             ("JMX Fetch Logs", lambda: [self.properties.set_log_file(self.jmxfetch_log_file),
-                self.show_html(self.properties.group_code, self.properties.html_window, False)]),
+                                        self.show_html(self.properties.group_code, self.properties.html_window, False)]),
             ("Agent Status", lambda: [self.properties.html_window.setHtml(self.properties.html_window.latest_status()),
-                self.show_html(self.properties.group_code, self.properties.html_window, True),
-                self.properties.set_status()]),
+                                      self.show_html(
+                                          self.properties.group_code, self.properties.html_window, True),
+                                      self.properties.set_status()]),
         ]
 
         self.agent_settings = QPushButton(get_icon("edit.png"),
-                                      "Settings", self)
+                                          "Settings", self)
         self.connect(self.agent_settings, SIGNAL("clicked()"),
-            lambda: [self.properties.set_datadog_conf(datadog_conf),
-                self.show_html(self.properties.group_code, self.properties.html_window, False)])
+                     lambda: [self.properties.set_datadog_conf(datadog_conf),
+                              self.show_html(self.properties.group_code, self.properties.html_window, False)])
 
         self.setting_menu = SettingMenu(self.settings)
         self.connect(self.setting_button, SIGNAL("clicked()"),
-            lambda: self.setting_menu.popup(self.setting_button.mapToGlobal(QPoint(0,0))))
+                     lambda: self.setting_menu.popup(self.setting_button.mapToGlobal(QPoint(0, 0))))
 
         self.manager_menu = Menu(self)
         self.connect(self.menu_button, SIGNAL("clicked()"),
-            lambda: self.manager_menu.popup(self.menu_button.mapToGlobal(QPoint(0,0))))
+                     lambda: self.manager_menu.popup(self.menu_button.mapToGlobal(QPoint(0, 0))))
 
         holdingBox = QGroupBox("", self)
         Box = QVBoxLayout(self)
@@ -415,11 +438,11 @@ class MainWindow(QSplitter):
 
         self.connect(self.properties.refresh_button, SIGNAL("clicked()"),
                      lambda: [self.properties.set_log_file(self.properties.current_file),
-                     self.properties.html_window.setHtml(self.properties.html_window.latest_status())])
+                              self.properties.html_window.setHtml(self.properties.html_window.latest_status())])
 
         self.connect(listwidget, SIGNAL('currentRowChanged(int)'),
                      lambda row: [self.properties.set_item(checks[row]),
-                     self.show_html(self.properties.group_code, self.properties.html_window, False)])
+                                  self.show_html(self.properties.group_code, self.properties.html_window, False)])
 
         listwidget.setCurrentRow(0)
 
@@ -455,6 +478,7 @@ class MainWindow(QSplitter):
             editor.setVisible(True)
             html.setVisible(False)
 
+
 class Menu(QMenu):
 
     def __init__(self, parent=None, ):
@@ -467,7 +491,6 @@ class Menu(QMenu):
             self.options[name] = menu_action
 
         self.connect(self, SIGNAL("aboutToShow()"), lambda: self.update_options())
-
 
     def update_options(self):
         status = get_service_status()
@@ -483,6 +506,7 @@ class Menu(QMenu):
             self.options[START_AGENT].setEnabled(False)
             self.options[RESTART_AGENT].setEnabled(False)
             self.options[STOP_AGENT].setEnabled(False)
+
 
 class SettingMenu(QMenu):
 
@@ -520,6 +544,7 @@ def disable_check(properties):
     properties.disable_button.setEnabled(False)
     check.disable()
 
+
 def enable_check(properties):
     check = properties.current_file
 
@@ -538,12 +563,14 @@ def save_file(properties):
     new_content = properties.editor.toPlainText().__str__()
     current_file.save(new_content)
 
+
 def check_yaml_syntax(content):
     try:
         yaml.load(content, Loader=yLoader)
     except Exception, e:
         warning_popup("Unable to parse yaml: \n %s" % str(e))
         raise
+
 
 def _service_manager(action):
     try:
@@ -556,11 +583,13 @@ def _service_manager(action):
     except Exception, e:
         warning_popup("Couldn't %s service: \n %s" % (action, str(e)))
 
+
 def service_manager(action, async=True):
     if not async:
         _service_manager(action)
     else:
         thread.start_new_thread(_service_manager, (action,))
+
 
 def get_service_status():
     try:
@@ -568,23 +597,28 @@ def get_service_status():
     except Exception:
         return "Unknown"
 
-def is_service_running(status = None):
+
+def is_service_running(status=None):
     if status == None:
         status = get_service_status()
     return status == win32service.SERVICE_RUNNING
 
-def is_service_pending(status = None):
+
+def is_service_pending(status=None):
     if status == None:
         status = get_service_status()
     return status in [win32service.SERVICE_STOP_PENDING, win32service.SERVICE_START_PENDING]
 
-def is_service_stopped(status = None):
+
+def is_service_stopped(status=None):
     if status == None:
         status = get_service_status()
     return status == win32service.SERVICE_STOPPED
 
+
 def warning_popup(message, parent=None):
     QMessageBox.warning(parent, 'Message', message, QMessageBox.Ok)
+
 
 def info_popup(message, parent=None):
     QMessageBox.information(parent, 'Message', message, QMessageBox.Ok)

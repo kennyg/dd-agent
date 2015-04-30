@@ -18,12 +18,11 @@ MAX_SLOW_ENTRIES_KEY = "slowlog-max-len"
 REPL_KEY = 'master_link_status'
 LINK_DOWN_KEY = 'master_link_down_since_seconds'
 
+
 class Redis(AgentCheck):
     db_key_pattern = re.compile(r'^db\d+')
     slave_key_pattern = re.compile(r'^slave\d+')
     subkeys = ['keys', 'expires']
-
-    
 
     SOURCE_TYPE_NAME = 'redis'
 
@@ -124,7 +123,8 @@ class Redis(AgentCheck):
                 list_params = ['host', 'port', 'db', 'password', 'socket_timeout',
                                'connection_pool', 'charset', 'errors', 'unix_socket_path']
 
-                # Set a default timeout (in seconds) if no timeout is specified in the instance config
+                # Set a default timeout (in seconds) if no timeout is specified in the
+                # instance config
                 instance['socket_timeout'] = instance.get('socket_timeout', 5)
 
                 connection_params = dict((k, instance[k]) for k in list_params if k in instance)
@@ -132,7 +132,8 @@ class Redis(AgentCheck):
                 self.connections[key] = redis.Redis(**connection_params)
 
             except TypeError:
-                raise Exception("You need a redis library that supports authenticated connections. Try sudo easy_install redis.")
+                raise Exception(
+                    "You need a redis library that supports authenticated connections. Try sudo easy_install redis.")
 
         return self.connections[key]
 
@@ -158,7 +159,6 @@ class Redis(AgentCheck):
         conn = self._get_conn(instance)
 
         tags, tags_to_add = self._get_tags(custom_tags, instance)
-        
 
         # Ping the database for info, and track the latency.
         # Process the service check: the check passes if we can connect to Redis
@@ -186,11 +186,13 @@ class Redis(AgentCheck):
                 # allows tracking percentage of expired keys as DD does not
                 # currently allow arithmetic on metric for monitoring
                 expires_keys = info[key]["expires"]
-                total_keys   = info[key]["keys"]
+                total_keys = info[key]["keys"]
                 persist_keys = total_keys - expires_keys
                 self.gauge("redis.persist", persist_keys, tags=db_tags)
-                self.gauge("redis.persist.percent", 100.0 * persist_keys / total_keys, tags=db_tags)
-                self.gauge("redis.expires.percent", 100.0 * expires_keys / total_keys, tags=db_tags)
+                self.gauge(
+                    "redis.persist.percent", 100.0 * persist_keys / total_keys, tags=db_tags)
+                self.gauge(
+                    "redis.expires.percent", 100.0 * expires_keys / total_keys, tags=db_tags)
 
                 for subkey in self.subkeys:
                     # Old redis module on ubuntu 10.04 (python-redis 0.6.1) does not
@@ -206,7 +208,7 @@ class Redis(AgentCheck):
 
         # Save a subset of db-wide statistics
         [self.gauge(self.GAUGE_KEYS[k], info[k], tags=tags) for k in self.GAUGE_KEYS if k in info]
-        [self.rate (self.RATE_KEYS[k],  info[k], tags=tags) for k in self.RATE_KEYS  if k in info]
+        [self.rate(self.RATE_KEYS[k],  info[k], tags=tags) for k in self.RATE_KEYS if k in info]
 
         # Save the number of commands.
         self.rate('redis.net.commands', info['total_commands_processed'],
@@ -238,7 +240,6 @@ class Redis(AgentCheck):
                             self.warning("{0} key not found in redis".format(key))
                         self.gauge('redis.key.length', 0, tags=key_tags)
 
-
         self._check_replication(info, tags)
 
     def _check_replication(self, info, tags):
@@ -254,7 +255,8 @@ class Redis(AgentCheck):
                     slave_tags = tags[:]
                     for slave_tag in ('ip', 'port'):
                         if slave_tag in info[key]:
-                            slave_tags.append('slave_{0}:{1}'.format(slave_tag, info[key][slave_tag]))
+                            slave_tags.append(
+                                'slave_{0}:{1}'.format(slave_tag, info[key][slave_tag]))
                     slave_tags.append('slave_id:%s' % key.lstrip('slave'))
                     self.gauge('redis.replication.delay', delay, tags=slave_tags)
 
@@ -269,7 +271,6 @@ class Redis(AgentCheck):
             self.service_check('redis.replication.master_link_status', status, tags=tags)
             self.gauge('redis.replication.master_link_down_since_seconds', down_seconds, tags=tags)
 
-
     def _check_slowlog(self, instance, custom_tags):
         """Retrieve length and entries from Redis' SLOWLOG
 
@@ -278,7 +279,6 @@ class Redis(AgentCheck):
 
         """
 
-        
         conn = self._get_conn(instance)
 
         tags, _ = self._get_tags(custom_tags, instance)
@@ -286,25 +286,23 @@ class Redis(AgentCheck):
         if not instance.get(MAX_SLOW_ENTRIES_KEY):
             max_slow_entries = int(conn.config_get(MAX_SLOW_ENTRIES_KEY)[MAX_SLOW_ENTRIES_KEY])
             if max_slow_entries > DEFAULT_MAX_SLOW_ENTRIES:
-                self.warning("Redis {0} is higher than {1}. Defaulting to {1}."\
-                    "If you need a higher value, please set {0} in your check config"\
-                    .format(MAX_SLOW_ENTRIES_KEY, DEFAULT_MAX_SLOW_ENTRIES))
+                self.warning("Redis {0} is higher than {1}. Defaulting to {1}."
+                             "If you need a higher value, please set {0} in your check config"
+                             .format(MAX_SLOW_ENTRIES_KEY, DEFAULT_MAX_SLOW_ENTRIES))
                 max_slow_entries = DEFAULT_MAX_SLOW_ENTRIES
         else:
             max_slow_entries = int(instance.get(MAX_SLOW_ENTRIES_KEY))
-
 
         # Generate a unique id for this instance to be persisted across runs
         ts_key = self._generate_instance_key(instance)
 
         # Get all slowlog entries
-        
+
         slowlogs = conn.slowlog_get(max_slow_entries)
 
         # Find slowlog entries between last timestamp and now using start_time
         slowlogs = [s for s in slowlogs if s['start_time'] >
-            self.last_timestamp_seen[ts_key]]
-
+                    self.last_timestamp_seen[ts_key]]
 
         max_ts = 0
         # Slowlog entry looks like:

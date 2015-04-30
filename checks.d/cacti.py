@@ -34,20 +34,22 @@ CACTI_TO_DD = {
     'ping': 'system.ping.latency'
 }
 
+
 class Cacti(AgentCheck):
+
     def __init__(self, name, init_config, agentConfig):
         AgentCheck.__init__(self, name, init_config, agentConfig)
         self.last_ts = {}
 
     def get_library_versions(self):
         if rrdtool is not None:
-            return {"rrdtool": rrdtool.__version__} 
+            return {"rrdtool": rrdtool.__version__}
         return {"rrdtool": "Not Found"}
 
     def check(self, instance):
         if rrdtool is None:
             raise Exception("Unable to import python rrdtool module")
-        
+
         # Load the instance config
         config = self._get_config(instance)
 
@@ -74,8 +76,8 @@ class Cacti(AgentCheck):
         if whitelist:
             if not os.path.isfile(whitelist) or not os.access(whitelist, os.R_OK):
                 # Don't run the check if the whitelist is unavailable
-                self.log.exception("Unable to read whitelist file at %s" \
-                    % (whitelist))
+                self.log.exception("Unable to read whitelist file at %s"
+                                   % (whitelist))
 
             wl = open(whitelist)
             for line in wl:
@@ -83,7 +85,6 @@ class Cacti(AgentCheck):
             wl.close()
 
         return patterns
-
 
     def _get_config(self, instance):
         required = ['mysql_host', 'mysql_user', 'rrd_path']
@@ -123,7 +124,7 @@ class Cacti(AgentCheck):
             return metric_count
 
         # Find the consolidation functions for the RRD metrics
-        c_funcs = set([v for k,v in info.items() if k.endswith('.cf')])
+        c_funcs = set([v for k, v in info.items() if k.endswith('.cf')])
 
         for c in list(c_funcs):
             last_ts_key = '%s.%s' % (rrd_path, c)
@@ -156,7 +157,7 @@ class Cacti(AgentCheck):
                     # Save this metric as a gauge
                     val = self._transform_metric(m_name, p[k])
                     self.gauge(m_name, val, hostname=hostname,
-                        device_name=device_name, timestamp=ts)
+                               device_name=device_name, timestamp=ts)
                     metric_count += 1
                     last_ts = (ts + interval)
 
@@ -169,7 +170,7 @@ class Cacti(AgentCheck):
             tuples of (hostname, device_name, rrd_path)
         '''
         def _in_whitelist(rrd):
-            path = rrd.replace('<path_rra>/','')
+            path = rrd.replace('<path_rra>/', '')
             for p in whitelist:
                 if fnmatch(path, p):
                     return True
@@ -177,7 +178,8 @@ class Cacti(AgentCheck):
 
         c = connection.cursor()
 
-        and_parameters = " OR ".join(["hsc.field_name = '%s'" % field_name for field_name in field_names])
+        and_parameters = " OR ".join(
+            ["hsc.field_name = '%s'" % field_name for field_name in field_names])
 
         # Check for the existence of the `host_snmp_cache` table
         rrd_query = """
@@ -193,7 +195,7 @@ class Cacti(AgentCheck):
             WHERE dt.data_source_path IS NOT NULL
             AND dt.data_source_path != ''
             AND (%s OR hsc.field_name is NULL) """ % and_parameters
-            
+
         c.execute(rrd_query)
         res = []
         for hostname, device_name, rrd_path in c.fetchall():
@@ -232,7 +234,6 @@ class Cacti(AgentCheck):
         if m_name[0:11] in ('system.mem.', 'system.disk'):
             return val / 1024
         return val
-
 
     '''
         For backwards compatability with pre-checks.d configuration.

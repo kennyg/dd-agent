@@ -11,7 +11,9 @@ import requests
 db_stats = re.compile(r'^db_(\d)+$')
 whitespace = re.compile(r'\s')
 
+
 class KyotoTycoonCheck(AgentCheck):
+
     """Report statistics about the Kyoto Tycoon DBM-style
     database server (http://fallabs.com/kyototycoon/)
     """
@@ -63,21 +65,20 @@ class KyotoTycoonCheck(AgentCheck):
         if name is not None:
             service_check_tags.append('instance:%s' % name)
 
-
         try:
             r = requests.get(url)
             r.raise_for_status()
         except requests.exceptions.HTTPError as e:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                tags=service_check_tags, message=str(e.message))
+                               tags=service_check_tags, message=str(e.message))
             raise
         except Exception as e:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                tags=service_check_tags, message=str(e))
+                               tags=service_check_tags, message=str(e))
             raise
         else:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.OK,
-                tags=service_check_tags)
+                               tags=service_check_tags)
 
         body = r.content
 

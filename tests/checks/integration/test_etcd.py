@@ -31,7 +31,7 @@ class EtcdTest(AgentCheckTest):
 
     def test_bad_config(self):
         self.assertRaises(Exception,
-            lambda: self.run_check({"instances": [{"url": "http://localhost:4001/test"}]}))
+                          lambda: self.run_check({"instances": [{"url": "http://localhost:4001/test"}]}))
 
         self.assertEqual(len(self.service_checks), 1, self.service_checks)
         self.assertServiceCheck(self.check.SERVICE_CHECK_NAME,

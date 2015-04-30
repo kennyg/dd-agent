@@ -78,6 +78,7 @@ def serialize_event(event):
 
 
 class Reporter(threading.Thread):
+
     """
     The reporter periodically sends the aggregated metrics to the
     server.
@@ -152,9 +153,11 @@ class Reporter(threading.Thread):
             log_func = log.info
             if not should_log:
                 log_func = log.debug
-            log_func("Flush #%s: flushed %s metric%s, %s event%s, and %s service check run%s" % (self.flush_count, count, plural(count), event_count, plural(event_count), check_count, plural(check_count)))
+            log_func("Flush #%s: flushed %s metric%s, %s event%s, and %s service check run%s" % (
+                self.flush_count, count, plural(count), event_count, plural(event_count), check_count, plural(check_count)))
             if self.flush_count == FLUSH_LOGGING_INITIAL:
-                log.info("First flushes done, %s flushes will be logged every %s flushes." % (FLUSH_LOGGING_COUNT, FLUSH_LOGGING_PERIOD))
+                log.info("First flushes done, %s flushes will be logged every %s flushes." %
+                         (FLUSH_LOGGING_COUNT, FLUSH_LOGGING_PERIOD))
 
             # Persist a status message.
             packet_count = self.metrics_aggregator.total_count
@@ -181,7 +184,7 @@ class Reporter(threading.Thread):
         self.submit_http(url, body, headers)
 
     def submit_events(self, events):
-        headers = {'Content-Type':'application/json'}
+        headers = {'Content-Type': 'application/json'}
         event_chunk_size = self.event_chunk_size
 
         for chunk in chunks(events, event_chunk_size):
@@ -222,7 +225,7 @@ class Reporter(threading.Thread):
                 pass
 
     def submit_service_checks(self, service_checks):
-        headers = {'Content-Type':'application/json'}
+        headers = {'Content-Type': 'application/json'}
 
         params = {}
         if self.api_key:
@@ -233,6 +236,7 @@ class Reporter(threading.Thread):
 
 
 class Server(object):
+
     """
     A statsd udp server.
     """
@@ -254,7 +258,8 @@ class Server(object):
             if forward_to_port is None:
                 forward_to_port = 8125
 
-            log.info("External statsd forwarding enabled. All packets received will be forwarded to %s:%s" % (forward_to_host, forward_to_port))
+            log.info("External statsd forwarding enabled. All packets received will be forwarded to %s:%s" % (
+                forward_to_host, forward_to_port))
             try:
                 self.forward_udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 self.forward_udp_sock.connect((forward_to_host, forward_to_port))
@@ -271,7 +276,8 @@ class Server(object):
             self.socket.bind(self.address)
         except socket.gaierror:
             if self.address[0] == 'localhost':
-                log.warning("Warning localhost seems undefined in your host file, using 127.0.0.1 instead")
+                log.warning(
+                    "Warning localhost seems undefined in your host file, using 127.0.0.1 instead")
                 self.address = ('127.0.0.1', self.address[1])
                 self.socket.bind(self.address)
 
@@ -314,6 +320,7 @@ class Server(object):
 
 
 class Dogstatsd(Daemon):
+
     """ This class is the dogstatsd daemon. """
 
     def __init__(self, pid_file, server, reporter, autorestart):
@@ -362,7 +369,7 @@ def init(config_path=None, use_watchdog=False, use_forwarder=False, args=None):
     c = get_config(parse_args=False, cfg_path=config_path)
 
     if not c['use_dogstatsd'] and \
-        (args and args[0] in ['start', 'restart'] or not args):
+            (args and args[0] in ['start', 'restart'] or not args):
         log.info("Dogstatsd is disabled. Exiting")
         # We're exiting purposefully, so exit with zero (supervisor's expected
         # code). HACK: Sleep a little bit so supervisor thinks we've started cleanly
@@ -412,7 +419,8 @@ def init(config_path=None, use_watchdog=False, use_forwarder=False, args=None):
     if non_local_traffic:
         server_host = ''
 
-    server = Server(aggregator, server_host, port, forward_to_host=forward_to_host, forward_to_port=forward_to_port)
+    server = Server(aggregator, server_host, port, forward_to_host=forward_to_host,
+                    forward_to_port=forward_to_port)
 
     return reporter, server, c
 

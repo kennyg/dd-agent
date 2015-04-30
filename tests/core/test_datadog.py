@@ -7,10 +7,12 @@ from checks.datadog import Dogstreams, EventDefaults
 
 log = logging.getLogger('datadog.test')
 
+
 def parse_ancient_function_plugin(logger, line):
     """Ancient stateless parser"""
     res = line.split()
     res[3] = {'metric_type': 'gauge'}
+
 
 def parse_function_plugin(logger, line, state):
     """Simple stateful parser"""
@@ -24,13 +26,17 @@ def parse_function_plugin(logger, line, state):
     res[3] = {'metric_type': 'counter'}
     return tuple(res)
 
+
 class ParseClassPlugin(object):
+
     """Class-based stateful parser"""
+
     def __init__(self, logger=None, user_args=(), **kwargs):
         self.logger = logger
         self.args = '.'.join(user_args)
         self.acc = 0
         self.logger.info('Completed initialization')
+
     def parse_line(self, line):
         self.logger.info('Parsing line %r; counter is %r', line, self.acc)
         self.acc += 1
@@ -45,14 +51,16 @@ from datetime import datetime
 import calendar
 
 log_event_pattern = re.compile("".join([
-    r"(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) ", # iso timestamp
-    r"\[(?P<alert_type>(ERROR)|(RECOVERY))\] - ", # alert type
+    r"(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) ",  # iso timestamp
+    r"\[(?P<alert_type>(ERROR)|(RECOVERY))\] - ",  # alert type
     r"(?P<msg_title>(?P<host>[^ ]*).*)"
 ]))
 alert_types = {
     "ERROR": "error",
     "RECOVERY": "success"
 }
+
+
 def parse_events(logger, line):
     """ Expecting lines like this:
         2012-05-14 12:46:01 [ERROR] - host0 is down (broke its collarbone)
@@ -64,16 +72,19 @@ def parse_events(logger, line):
             'alert_type': alert_types.get(groups['alert_type'], ''),
             'timestamp':  calendar.timegm(datetime.strptime(groups['timestamp'], '%Y-%m-%d %H:%M:%S').timetuple()),
             'msg_text': line
-            })
+        })
 
         return groups
     else:
         return None
 
+
 def repr_event_parser(logger, line):
     return eval(line)
 
+
 class TailTestCase(unittest.TestCase):
+
     def setUp(self):
         self.log_file = NamedTemporaryFile()
         self.logger = logging.getLogger('test.dogstream')
@@ -85,6 +96,7 @@ class TailTestCase(unittest.TestCase):
 
     def tearDown(self):
         self.log_file.close()
+
 
 class TestDogstream(TailTestCase):
     gauge = {'metric_type': 'gauge'}
@@ -167,8 +179,8 @@ class TestDogstream(TailTestCase):
             ('test_metric.e 1000000002 10 metric_type=gauge'),
         ]
         expected_output = {"dogstream":
-            [('test_metric.e', 1000000000, 10, self.gauge)]
-        }
+                           [('test_metric.e', 1000000000, 10, self.gauge)]
+                           }
 
         self._write_log(log_data)
 
@@ -187,7 +199,8 @@ class TestDogstream(TailTestCase):
                 ('test.metric.simple', 1100000000, 1, self.gauge)]
         }
         self._write_log(log_data)
-        plugdog = Dogstreams.init(self.logger, {'dogstreams': '{0}:{1}:parse_ancient_function_plugin'.format(self.log_file.name, __name__)})
+        plugdog = Dogstreams.init(self.logger, {
+                                  'dogstreams': '{0}:{1}:parse_ancient_function_plugin'.format(self.log_file.name, __name__)})
         actual_output = plugdog.check(self.config, move_end=False)
 
     def test_dogstream_function_plugin(self):
@@ -203,7 +216,8 @@ class TestDogstream(TailTestCase):
         }
         self._write_log(log_data)
 
-        statedog = Dogstreams.init(self.logger, {'dogstreams': '{0}:{1}:parse_function_plugin'.format(self.log_file.name, __name__)})
+        statedog = Dogstreams.init(
+            self.logger, {'dogstreams': '{0}:{1}:parse_function_plugin'.format(self.log_file.name, __name__)})
         actual_output = statedog.check(self.config, move_end=False)
         self.assertEquals(expected_output, actual_output)
 
@@ -220,7 +234,8 @@ class TestDogstream(TailTestCase):
         }
         self._write_log(log_data)
 
-        statedog = Dogstreams.init(self.logger, {'dogstreams': '{0}:{1}:ParseClassPlugin:foo:bar'.format(self.log_file.name, __name__)})
+        statedog = Dogstreams.init(
+            self.logger, {'dogstreams': '{0}:{1}:ParseClassPlugin:foo:bar'.format(self.log_file.name, __name__)})
         actual_output = statedog.check(self.config, move_end=False)
         self.assertEquals(expected_output, actual_output)
 
@@ -281,7 +296,8 @@ class TestDogstream(TailTestCase):
         }
         self._write_log(log_data)
 
-        dogstream = Dogstreams.init(self.logger, {'dogstreams': '{0}:{1}:parse_events'.format(self.log_file.name, __name__)})
+        dogstream = Dogstreams.init(
+            self.logger, {'dogstreams': '{0}:{1}:parse_events'.format(self.log_file.name, __name__)})
         actual_output = dogstream.check(self.config, move_end=False)
         self.assertEquals(expected_output, actual_output)
 
@@ -315,7 +331,8 @@ class TestDogstream(TailTestCase):
 
         self._write_log([repr(d) for d in log_data])
 
-        dogstream = Dogstreams.init(self.logger, {'dogstreams': '{0}:{1}:repr_event_parser'.format(self.log_file.name, __name__)})
+        dogstream = Dogstreams.init(
+            self.logger, {'dogstreams': '{0}:{1}:repr_event_parser'.format(self.log_file.name, __name__)})
         actual_output = dogstream.check(self.config, move_end=False)
         self.assertEquals(expected_output, actual_output)
 
@@ -340,55 +357,56 @@ class TestDogstream(TailTestCase):
         event_object = EventDefaults.EVENT_OBJECT
 
         expected_output = {
-            "dogstreamEvents":[
-            {
-                "timestamp": cassandra.parse_date("2012-05-12 21:10:48,058"),
-                "msg_title": "Compacting [SSTableReader(path='/var/cassandra/data/test_data/series-hc-6528-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6531-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6529-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6530-Data.db')]"[0:common.MAX_TITLE_LEN],
-                "msg_text": "Compacting [SSTableReader(path='/var/cassandra/data/test_data/series-hc-6528-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6531-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6529-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6530-Data.db')]",
-                "alert_type": alert_type,
-                "auto_priority": 0,
-                "event_type": event_type,
-                "aggregation_key": event_object,
-                "event_object": event_object,
-            },  {
-                "timestamp": cassandra.parse_date("2012-05-12 21:10:54,851"),
-                "msg_title": "Compacted to [/var/cassandra/a-hc-65-Data.db,].  102,079,134 to 101,546,397",
-                "alert_type": alert_type,
-                "auto_priority": 0,
-                "event_type": event_type,
-                "aggregation_key": event_object,
-                "event_object": event_object,
-            },  {
-                "timestamp": cassandra.parse_date("2012-05-13 13:15:01,927"),
-                "msg_title": "Compacting [SSTableReader(path='/var/cassandra/data/test_data/series-hc-6527-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6522-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6532-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6517-Data.db')]"[0:common.MAX_TITLE_LEN],
-                "msg_text": "Compacting [SSTableReader(path='/var/cassandra/data/test_data/series-hc-6527-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6522-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6532-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6517-Data.db')]",
-                "alert_type": alert_type,
-                "event_type": event_type,
-                "auto_priority": 0,
-                "aggregation_key": event_object,
-                "event_object": event_object,
-            },  {
-                "timestamp": cassandra.parse_date("2012-05-13 13:27:17,685"),
-                "msg_title": "Compacting large row test_data/series:6c6f677c32 (782001077 bytes) incrementally",
-                "alert_type": alert_type,
-                "event_type": event_type,
-                "auto_priority": 0,
-                "aggregation_key": event_object,
-                "event_object": event_object,
-            },  {
-                "timestamp": cassandra.parse_date(datetime.utcnow().strftime("%Y-%m-%d") + " 13:27:17,685"),
-                "msg_title": "Compacting large row test_data/series:6c6f677c32 (782001077 bytes) incrementally",
-                "alert_type": alert_type,
-                "event_type": event_type,
-                "auto_priority": 0,
-                "aggregation_key": event_object,
-                "event_object": event_object,
-            },
-        ]}
+            "dogstreamEvents": [
+                {
+                    "timestamp": cassandra.parse_date("2012-05-12 21:10:48,058"),
+                    "msg_title": "Compacting [SSTableReader(path='/var/cassandra/data/test_data/series-hc-6528-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6531-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6529-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6530-Data.db')]"[0:common.MAX_TITLE_LEN],
+                    "msg_text": "Compacting [SSTableReader(path='/var/cassandra/data/test_data/series-hc-6528-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6531-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6529-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6530-Data.db')]",
+                    "alert_type": alert_type,
+                    "auto_priority": 0,
+                    "event_type": event_type,
+                    "aggregation_key": event_object,
+                    "event_object": event_object,
+                },  {
+                    "timestamp": cassandra.parse_date("2012-05-12 21:10:54,851"),
+                    "msg_title": "Compacted to [/var/cassandra/a-hc-65-Data.db,].  102,079,134 to 101,546,397",
+                    "alert_type": alert_type,
+                    "auto_priority": 0,
+                    "event_type": event_type,
+                    "aggregation_key": event_object,
+                    "event_object": event_object,
+                },  {
+                    "timestamp": cassandra.parse_date("2012-05-13 13:15:01,927"),
+                    "msg_title": "Compacting [SSTableReader(path='/var/cassandra/data/test_data/series-hc-6527-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6522-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6532-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6517-Data.db')]"[0:common.MAX_TITLE_LEN],
+                    "msg_text": "Compacting [SSTableReader(path='/var/cassandra/data/test_data/series-hc-6527-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6522-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6532-Data.db'), SSTableReader(path='/var/cassandra/data/test_data/series-hc-6517-Data.db')]",
+                    "alert_type": alert_type,
+                    "event_type": event_type,
+                    "auto_priority": 0,
+                    "aggregation_key": event_object,
+                    "event_object": event_object,
+                },  {
+                    "timestamp": cassandra.parse_date("2012-05-13 13:27:17,685"),
+                    "msg_title": "Compacting large row test_data/series:6c6f677c32 (782001077 bytes) incrementally",
+                    "alert_type": alert_type,
+                    "event_type": event_type,
+                    "auto_priority": 0,
+                    "aggregation_key": event_object,
+                    "event_object": event_object,
+                },  {
+                    "timestamp": cassandra.parse_date(datetime.utcnow().strftime("%Y-%m-%d") + " 13:27:17,685"),
+                    "msg_title": "Compacting large row test_data/series:6c6f677c32 (782001077 bytes) incrementally",
+                    "alert_type": alert_type,
+                    "event_type": event_type,
+                    "auto_priority": 0,
+                    "aggregation_key": event_object,
+                    "event_object": event_object,
+                },
+            ]}
 
         self._write_log(log_data.split("\n"))
 
-        dogstream = Dogstreams.init(self.logger, {'dogstreams': '%s:dogstream.cassandra:parse_cassandra' % self.log_file.name})
+        dogstream = Dogstreams.init(
+            self.logger, {'dogstreams': '%s:dogstream.cassandra:parse_cassandra' % self.log_file.name})
         actual_output = dogstream.check(self.config, move_end=False)
         self.assertEquals(expected_output, actual_output)
 
@@ -402,7 +420,7 @@ class TestDogstream(TailTestCase):
         event_type = supervisord_log.EVENT_TYPE
 
         expected_output = {
-            "dogstreamEvents":[
+            "dogstreamEvents": [
                 {
                     "alert_type": "info", "event_type": event_type,
                     "aggregation_key": "monitor",
@@ -432,7 +450,8 @@ class TestDogstream(TailTestCase):
             ]}
         self._write_log(log_data.split("\n"))
 
-        dogstream = Dogstreams.init(self.logger, {'dogstreams': '%s:dogstream.supervisord_log:parse_supervisord' % self.log_file.name})
+        dogstream = Dogstreams.init(
+            self.logger, {'dogstreams': '%s:dogstream.supervisord_log:parse_supervisord' % self.log_file.name})
         actual_output = dogstream.check(self.config, move_end=False)
         self.assertEquals(expected_output, actual_output)
 

@@ -14,6 +14,7 @@ STATSD_PORT = 8127
 
 
 class DummyReporter(threading.Thread):
+
     def __init__(self, metrics_aggregator):
         threading.Thread.__init__(self)
         self.finished = threading.Event()
@@ -36,6 +37,7 @@ class DummyReporter(threading.Thread):
 
 @attr(requires='solr')
 class JMXTestCase(unittest.TestCase):
+
     def setUp(self):
         aggregator = MetricsAggregator("test_host")
         self.server = Server(aggregator, "localhost", STATSD_PORT)
@@ -67,9 +69,12 @@ class JMXTestCase(unittest.TestCase):
 
         self.assertTrue(type(metrics) == type([]))
         self.assertTrue(len(metrics) > 8, metrics)
-        self.assertEquals(len([t for t in metrics if 'instance:solr_instance' in t['tags'] and t['metric'] == "jvm.thread_count"]), 1, metrics)
-        self.assertTrue(len([t for t in metrics if "jvm." in t['metric'] and 'instance:solr_instance' in t['tags']]) > 4, metrics)
-        self.assertTrue(len([t for t in metrics if "solr." in t['metric'] and 'instance:solr_instance' in t['tags']]) > 4, metrics)
+        self.assertEquals(len([t for t in metrics if 'instance:solr_instance' in t[
+                          'tags'] and t['metric'] == "jvm.thread_count"]), 1, metrics)
+        self.assertTrue(len(
+            [t for t in metrics if "jvm." in t['metric'] and 'instance:solr_instance' in t['tags']]) > 4, metrics)
+        self.assertTrue(len([t for t in metrics if "solr." in t['metric']
+                             and 'instance:solr_instance' in t['tags']]) > 4, metrics)
 
 if __name__ == "__main__":
     unittest.main()

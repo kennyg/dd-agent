@@ -68,10 +68,10 @@ class SnmpCheck(AgentCheck):
         cls.cmd_generator.ignoreNonIncreasingOid = ignore_nonincreasing_oid
         if mibs_path is not None:
             mib_builder = cls.cmd_generator.snmpEngine.msgAndPduDsp.\
-                          mibInstrumController.mibBuilder
+                mibInstrumController.mibBuilder
             mib_sources = mib_builder.getMibSources() + (
-                    builder.DirMibSource(mibs_path),
-                    )
+                builder.DirMibSource(mibs_path),
+            )
             mib_builder.setMibSources(*mib_sources)
 
     @classmethod
@@ -87,7 +87,7 @@ class SnmpCheck(AgentCheck):
             # See http://pysnmp.sourceforge.net/docs/current/security-configuration.html
             if int(instance.get("snmp_version", 2)) == 1:
                 return cmdgen.CommunityData(instance['community_string'],
-                    mpModel=0)
+                                            mpModel=0)
             return cmdgen.CommunityData(instance['community_string'], mpModel=1)
 
         elif "user" in instance:
@@ -124,7 +124,7 @@ class SnmpCheck(AgentCheck):
         if "ip_address" not in instance:
             raise Exception("An IP address needs to be specified")
         ip_address = instance["ip_address"]
-        port = int(instance.get("port", 161)) # Default SNMP port
+        port = int(instance.get("port", 161))  # Default SNMP port
         return cmdgen.UdpTransportTarget((ip_address, port), timeout=timeout, retries=retries)
 
     def raise_on_error_indication(self, error_indication, instance):
@@ -311,7 +311,7 @@ class SnmpCheck(AgentCheck):
         Submit the results to the aggregator.
         '''
         tags = instance.get("tags", [])
-        tags = tags + ["snmp_device:"+instance.get('ip_address')]
+        tags = tags + ["snmp_device:" + instance.get('ip_address')]
 
         for metric in instance.get('metrics', []):
             if 'table' in metric:
@@ -337,12 +337,13 @@ class SnmpCheck(AgentCheck):
                 name = metric['symbol']
                 result = results[name].items()
                 if len(result) > 1:
-                    self.log("Several rows corresponding while the metric is supposed to be a scalar")
+                    self.log(
+                        "Several rows corresponding while the metric is supposed to be a scalar")
                     continue
                 val = result[0][1]
                 self.submit_metric(name, val, tags)
             elif 'OID' in metric:
-                pass # This one is already handled by the other batch of requests
+                pass  # This one is already handled by the other batch of requests
             else:
                 raise Exception('Unsupported metric in config file: %s' % metric)
 
@@ -372,7 +373,8 @@ class SnmpCheck(AgentCheck):
             try:
                 tag_value = results[col_tag[1]][index]
             except KeyError:
-                self.log.warning("Column %s not present in the table, skipping this tag", col_tag[1])
+                self.log.warning(
+                    "Column %s not present in the table, skipping this tag", col_tag[1])
                 continue
             if reply_invalid(tag_value):
                 self.log.warning("Can't deduct tag from column for tag %s",

@@ -7,7 +7,7 @@ try:
     from setuptools import setup, find_packages
 
     # required to build the cython extensions
-    from distutils.extension import Extension #pylint: disable=no-name-in-module
+    from distutils.extension import Extension  # pylint: disable=no-name-in-module
 
 except ImportError:
     from ez_setup import use_setuptools
@@ -22,7 +22,7 @@ setup_requires = [
 ]
 
 # Prereqs of the install. Will install when deploying the egg.
-install_requires=[
+install_requires = [
 ]
 
 if sys.platform == 'win32':
@@ -89,6 +89,7 @@ if sys.platform == 'win32':
     ]
 
     class Target(object):
+
         def __init__(self, **kw):
             self.__dict__.update(kw)
             self.version = get_version()
@@ -106,15 +107,16 @@ if sys.platform == 'win32':
                 'compressed': True,
                 'bundle_files': 3,
                 'excludes': ['numpy'],
-                'dll_excludes': [ "IPHLPAPI.DLL", "NSI.dll",  "WINNSI.DLL",  "WTSAPI32.dll"],
-                'ascii':False,
+                'dll_excludes': ["IPHLPAPI.DLL", "NSI.dll",  "WINNSI.DLL",  "WTSAPI32.dll"],
+                'ascii': False,
             },
         },
         'console': ['win32\shell.py'],
         'service': [agent_svc],
         'windows': [{'script': 'win32\gui.py',
                      'dest_base': "agent-manager",
-                     'uac_info': "requireAdministrator", # The manager needs to be administrator to stop/start the service
+                     # The manager needs to be administrator to stop/start the service
+                     'uac_info': "requireAdministrator",
                      'icon_resources': [(1, r"packaging\datadog-agent\win32\install_files\dd_agent_win_256.ico")],
                      }],
         'data_files': [

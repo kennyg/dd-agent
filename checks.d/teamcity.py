@@ -69,14 +69,14 @@ class TeamCityCheck(AgentCheck):
             event_dict['event_type'] = 'teamcity_deployment'
             event_dict['msg_title'] = "{0} deployed to {1}".format(instance_name, host)
             event_dict['msg_text'] = "Build Number: {0}\n\nMore Info: {1}"\
-                                        .format(new_build["number"], new_build["webUrl"])
+                .format(new_build["number"], new_build["webUrl"])
             event_dict['tags'].append('deployment')
         else:
             event_dict['event_type'] = "build"
             event_dict['msg_title'] = "Build for {0} successful".format(instance_name)
 
             event_dict['msg_text'] = "Build Number: {0}\nDeployed To: {1}\n\nMore Info: {2}"\
-                                        .format(new_build["number"], host, new_build["webUrl"])
+                .format(new_build["number"], host, new_build["webUrl"])
             event_dict['tags'].append('build')
 
         if tags:
@@ -119,7 +119,8 @@ class TeamCityCheck(AgentCheck):
             if new_builds["count"] == 0:
                 self.log.debug("No new builds found.")
             else:
-                self._build_and_send_event(new_builds["build"][0], instance_name, is_deployment, host, tags)
+                self._build_and_send_event(
+                    new_builds["build"][0], instance_name, is_deployment, host, tags)
         except requests.exceptions.HTTPError:
             self.log.exception(
                 "Couldn't fetch last build, got code {0}"

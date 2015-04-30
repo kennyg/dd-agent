@@ -12,6 +12,7 @@ import pymongo
 
 DEFAULT_TIMEOUT = 10
 
+
 class MongoDb(AgentCheck):
     SERVICE_CHECK_NAME = 'mongodb.can_connect'
     SOURCE_TYPE_NAME = 'mongodb'
@@ -120,16 +121,26 @@ class MongoDb(AgentCheck):
             state of a mongo node"""
 
         def get_state_description(state):
-            if state == 0: return 'Starting Up'
-            elif state == 1: return 'Primary'
-            elif state == 2: return 'Secondary'
-            elif state == 3: return 'Recovering'
-            elif state == 4: return 'Fatal'
-            elif state == 5: return 'Starting up (forking threads)'
-            elif state == 6: return 'Unknown'
-            elif state == 7: return 'Arbiter'
-            elif state == 8: return 'Down'
-            elif state == 9: return 'Rollback'
+            if state == 0:
+                return 'Starting Up'
+            elif state == 1:
+                return 'Primary'
+            elif state == 2:
+                return 'Secondary'
+            elif state == 3:
+                return 'Recovering'
+            elif state == 4:
+                return 'Fatal'
+            elif state == 5:
+                return 'Starting up (forking threads)'
+            elif state == 6:
+                return 'Unknown'
+            elif state == 7:
+                return 'Arbiter'
+            elif state == 8:
+                return 'Down'
+            elif state == 9:
+                return 'Rollback'
 
         status = get_state_description(state)
         hostname = get_hostname(agentConfig)
@@ -181,8 +192,6 @@ class MongoDb(AgentCheck):
         # de-dupe tags to avoid a memory leak
         tags = list(set(tags))
 
-
-
         if not db_name:
             self.log.info('No MongoDB database found in URI. Defaulting to admin.')
             db_name = 'admin'
@@ -207,16 +216,18 @@ class MongoDb(AgentCheck):
 
         try:
             conn = pymongo.Connection(server, network_timeout=DEFAULT_TIMEOUT,
-                **ssl_params)
+                                      **ssl_params)
             db = conn[db_name]
         except Exception:
-            self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL, tags=service_check_tags)
+            self.service_check(
+                self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL, tags=service_check_tags)
             raise
 
         if do_auth:
             if not db.authenticate(username, password):
                 message = "Mongo: cannot connect with config %s" % server
-                self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL, tags=service_check_tags, message=message)
+                self.service_check(
+                    self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL, tags=service_check_tags, message=message)
                 raise Exception(message)
 
         self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.OK, tags=service_check_tags)
@@ -228,7 +239,8 @@ class MongoDb(AgentCheck):
         status['stats'] = db.command('dbstats')
 
         # Handle replica data, if any
-        # See http://www.mongodb.org/display/DOCS/Replica+Set+Commands#ReplicaSetCommands-replSetGetStatus
+        # See
+        # http://www.mongodb.org/display/DOCS/Replica+Set+Commands#ReplicaSetCommands-replSetGetStatus
         try:
             data = {}
 
@@ -248,11 +260,11 @@ class MongoDb(AgentCheck):
                 if current is not None and primary is not None:
                     lag = primary['optimeDate'] - current['optimeDate']
                     # Python 2.7 has this built in, python < 2.7 don't...
-                    if hasattr(lag,'total_seconds'):
+                    if hasattr(lag, 'total_seconds'):
                         data['replicationLag'] = lag.total_seconds()
                     else:
-                        data['replicationLag'] = (lag.microseconds + \
-            (lag.seconds + lag.days * 24 * 3600) * 10**6) / 10.0**6
+                        data['replicationLag'] = (lag.microseconds +
+                                                  (lag.seconds + lag.days * 24 * 3600) * 10**6) / 10.0**6
 
                 if current is not None:
                     data['health'] = current['health']

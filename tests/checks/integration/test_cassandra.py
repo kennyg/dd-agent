@@ -11,6 +11,7 @@ STATSD_PORT = 8121
 
 
 class DummyReporter(threading.Thread):
+
     def __init__(self, metrics_aggregator):
         threading.Thread.__init__(self)
         self.finished = threading.Event()
@@ -33,6 +34,7 @@ class DummyReporter(threading.Thread):
 
 @attr(requires='cassandra')
 class JMXTestCase(unittest.TestCase):
+
     def setUp(self):
         aggregator = MetricsAggregator("test_host")
         self.server = Server(aggregator, "localhost", STATSD_PORT)
@@ -65,7 +67,8 @@ class JMXTestCase(unittest.TestCase):
 
         self.assertTrue(type(metrics) == type([]))
         self.assertTrue(len(metrics) > 0)
-        self.assertTrue(len([t for t in metrics if "cassandra.db." in t['metric'] and "instance:cassandra_instance" in t['tags']]) > 40, metrics)
+        self.assertTrue(len([t for t in metrics if "cassandra.db." in t[
+                        'metric'] and "instance:cassandra_instance" in t['tags']]) > 40, metrics)
 
 if __name__ == "__main__":
     unittest.main()

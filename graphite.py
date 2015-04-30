@@ -7,12 +7,13 @@ from tornado.tcpserver import TCPServer
 log = logging.getLogger(__name__)
 
 
-
 class GraphiteServer(TCPServer):
 
     def __init__(self, app, hostname, io_loop=None, ssl_options=None, **kwargs):
-        log.warn('Graphite listener is started -- if you do not need graphite, turn it off in datadog.conf.')
-        log.warn('Graphite relay uses pickle to transport messages. Pickle is not secured against remote execution exploits.')
+        log.warn(
+            'Graphite listener is started -- if you do not need graphite, turn it off in datadog.conf.')
+        log.warn(
+            'Graphite relay uses pickle to transport messages. Pickle is not secured against remote execution exploits.')
         log.warn('See http://blog.nelhage.com/2011/03/exploiting-pickle/ for more details')
         self.app = app
         self.hostname = hostname
@@ -56,14 +57,14 @@ class GraphiteConnection(object):
         For instance, if the hostname is in 4th position,
         you could use: host = components[3]
         """
-        
+
         try:
             components = metric.split('.')
 
             host = self.hostname
             metric = metric
             device = "N/A"
-        
+
             return metric, host, device
         except Exception, e:
             log.exception("Unparsable metric: %s" % metric)
@@ -82,7 +83,7 @@ class GraphiteConnection(object):
 
         log.debug("New metric: %s, values: %s" % (metric, datapoint))
         (metric, host, device) = self._parseMetric(metric)
-        if metric is not None:    
+        if metric is not None:
             self._postMetric(metric, host, device, datapoint)
             log.info("Posted metric: %s, host: %s, device: %s" % (metric, host, device))
 
@@ -93,17 +94,18 @@ class GraphiteConnection(object):
         except Exception:
             log.exception("Cannot decode grapite points")
             return
-   
+
         for (metric, datapoint) in datapoints:
             try:
                 datapoint = (float(datapoint[0]), float(datapoint[1]))
             except Exception, e:
                 log.error(e)
                 continue
-            
+
             self._processMetric(metric, datapoint)
 
         self.stream.read_bytes(4, self._on_read_header)
+
 
 def start_graphite_listener(port):
     from util import get_hostname

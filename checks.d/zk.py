@@ -34,6 +34,7 @@ from checks import AgentCheck
 
 
 class ZKConnectionFailure(Exception):
+
     """ Raised when we are unable to connect or get the output of a command. """
     pass
 
@@ -146,7 +147,7 @@ class ZookeeperCheck(AgentCheck):
         has_connections_val = version_tuple >= ('3', '4', '4')
 
         # Clients:
-        buf.readline() # skip the Clients: header
+        buf.readline()  # skip the Clients: header
         connections = 0
         client_line = buf.readline().strip()
         if client_line:

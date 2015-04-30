@@ -73,7 +73,7 @@ class AgentSvc(win32serviceutil.ServiceFramework):
         self.procs = {
             'forwarder': ProcessWatchDog("forwarder", DDForwarder(config, self.hostname)),
             'collector': ProcessWatchDog("collector", DDAgent(agentConfig, self.hostname,
-                                         heartbeat=self._collector_send_heartbeat)),
+                                                              heartbeat=self._collector_send_heartbeat)),
             'dogstatsd': ProcessWatchDog("dogstatsd", DogstatsdProcess(config, self.hostname)),
             'jmxfetch': ProcessWatchDog("jmxfetch", JMXFetchProcess(config, self.hostname), 3),
         }
@@ -127,10 +127,12 @@ class AgentSvc(win32serviceutil.ServiceFramework):
 
 
 class ProcessWatchDog(object):
+
     """
     Monitor the attached process.
     Restarts when it exits until the limit set is reached.
     """
+
     def __init__(self, name, process, max_restarts=5):
         self._name = name
         self._process = process
@@ -167,6 +169,7 @@ class ProcessWatchDog(object):
 
 
 class DDAgent(multiprocessing.Process):
+
     def __init__(self, agentConfig, hostname, heartbeat=None):
         multiprocessing.Process.__init__(self, name='ddagent')
         self.config = agentConfig
@@ -177,7 +180,8 @@ class DDAgent(multiprocessing.Process):
         self.is_enabled = True
 
     def run(self):
-        from config import initialize_logging; initialize_logging('windows_collector')
+        from config import initialize_logging
+        initialize_logging('windows_collector')
         log.debug("Windows Service - Starting collector")
         emitters = self.get_emitters()
         systemStats = get_system_stats()
@@ -203,7 +207,7 @@ class DDAgent(multiprocessing.Process):
     def get_emitters(self):
         emitters = [http_emitter]
         custom = [s.strip() for s in
-            self.config.get('custom_emitters', '').split(',')]
+                  self.config.get('custom_emitters', '').split(',')]
         for emitter_spec in custom:
             if not emitter_spec:
                 continue
@@ -213,6 +217,7 @@ class DDAgent(multiprocessing.Process):
 
 
 class DDForwarder(multiprocessing.Process):
+
     def __init__(self, agentConfig, hostname):
         multiprocessing.Process.__init__(self, name='ddforwarder')
         self.config = agentConfig
@@ -220,7 +225,8 @@ class DDForwarder(multiprocessing.Process):
         self.hostname = hostname
 
     def run(self):
-        from config import initialize_logging; initialize_logging('windows_forwarder')
+        from config import initialize_logging
+        initialize_logging('windows_forwarder')
         log.debug("Windows Service - Starting forwarder")
         set_win32_cert_path()
         port = self.config.get('listen_port', 17123)
@@ -241,6 +247,7 @@ class DDForwarder(multiprocessing.Process):
 
 
 class DogstatsdProcess(multiprocessing.Process):
+
     def __init__(self, agentConfig, hostname):
         multiprocessing.Process.__init__(self, name='dogstatsd')
         self.config = agentConfig
@@ -248,7 +255,8 @@ class DogstatsdProcess(multiprocessing.Process):
         self.hostname = hostname
 
     def run(self):
-        from config import initialize_logging; initialize_logging('windows_dogstatsd')
+        from config import initialize_logging
+        initialize_logging('windows_dogstatsd')
         if self.is_enabled:
             log.debug("Windows Service - Starting Dogstatsd server")
             self.reporter, self.server, _ = dogstatsd.init(use_forwarder=True)
@@ -266,6 +274,7 @@ class DogstatsdProcess(multiprocessing.Process):
 
 
 class JMXFetchProcess(multiprocessing.Process):
+
     def __init__(self, agentConfig, hostname):
         multiprocessing.Process.__init__(self, name='jmxfetch')
         self.config = agentConfig

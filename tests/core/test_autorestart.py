@@ -7,7 +7,9 @@ import signal
 
 
 class TestAutoRestart(unittest.TestCase):
+
     """ Test the auto-restart and forking of the agent """
+
     def setUp(self):
         self.agent_foreground = None
         self.agent_daemon = None
@@ -33,7 +35,7 @@ class TestAutoRestart(unittest.TestCase):
     def _get_child_parent_pids(self, grep_str):
         args = shlex.split('pgrep -f "%s"' % grep_str)
         pgrep = subprocess.Popen(args, stdout=subprocess.PIPE,
-            close_fds=True).communicate()[0]
+                                 close_fds=True).communicate()[0]
         pids = pgrep.strip().split('\n')
         assert len(pids) == 2, pgrep
 

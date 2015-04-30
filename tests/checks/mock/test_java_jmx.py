@@ -21,6 +21,7 @@ STATSD_PORT = 8129
 
 
 class DummyReporter(threading.Thread):
+
     def __init__(self, metrics_aggregator):
         threading.Thread.__init__(self)
         self.finished = threading.Event()
@@ -97,6 +98,7 @@ class JMXInitTest(AgentCheckTest):
 
 @attr(requires='tomcat')
 class JMXTestCase(unittest.TestCase):
+
     def setUp(self):
         aggregator = MetricsAggregator("test_host")
         self.server = Server(aggregator, "localhost", STATSD_PORT)
@@ -128,6 +130,9 @@ class JMXTestCase(unittest.TestCase):
 
         self.assertTrue(type(metrics) == type([]))
         self.assertTrue(len(metrics) > 0)
-        self.assertEquals(len([t for t in metrics if t['metric'] == "my.metric.buf" and "instance:jmx_instance1" in t['tags']]), 2, metrics)
-        self.assertTrue(len([t for t in metrics if 'type:ThreadPool' in t['tags'] and "instance:jmx_instance1" in t['tags'] and "jmx.catalina" in t['metric']]) > 8, metrics)
-        self.assertTrue(len([t for t in metrics if "jvm." in t['metric'] and "instance:jmx_instance1" in t['tags']]) == 13, metrics)
+        self.assertEquals(len([t for t in metrics if t[
+                          'metric'] == "my.metric.buf" and "instance:jmx_instance1" in t['tags']]), 2, metrics)
+        self.assertTrue(len([t for t in metrics if 'type:ThreadPool' in t[
+                        'tags'] and "instance:jmx_instance1" in t['tags'] and "jmx.catalina" in t['metric']]) > 8, metrics)
+        self.assertTrue(len([t for t in metrics if "jvm." in t['metric']
+                             and "instance:jmx_instance1" in t['tags']]) == 13, metrics)

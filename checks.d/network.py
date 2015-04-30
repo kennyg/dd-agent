@@ -12,16 +12,18 @@ from checks import AgentCheck
 from util import Platform
 
 BSD_TCP_METRICS = [
-        (re.compile("^\s*(\d+) data packets \(\d+ bytes\) retransmitted\s*$"), 'system.net.tcp.retrans_packs'),
-        (re.compile("^\s*(\d+) packets sent\s*$"), 'system.net.tcp.sent_packs'),
-        (re.compile("^\s*(\d+) packets received\s*$"), 'system.net.tcp.rcv_packs')
-        ]
+    (re.compile("^\s*(\d+) data packets \(\d+ bytes\) retransmitted\s*$"),
+     'system.net.tcp.retrans_packs'),
+    (re.compile("^\s*(\d+) packets sent\s*$"), 'system.net.tcp.sent_packs'),
+    (re.compile("^\s*(\d+) packets received\s*$"), 'system.net.tcp.rcv_packs')
+]
 
 SOLARIS_TCP_METRICS = [
-        (re.compile("\s*tcpRetransSegs\s*=\s*(\d+)\s*"), 'system.net.tcp.retrans_segs'),
-        (re.compile("\s*tcpOutDataSegs\s*=\s*(\d+)\s*"), 'system.net.tcp.in_segs'),
-        (re.compile("\s*tcpInSegs\s*=\s*(\d+)\s*"), 'system.net.tcp.out_segs')
-        ]
+    (re.compile("\s*tcpRetransSegs\s*=\s*(\d+)\s*"), 'system.net.tcp.retrans_segs'),
+    (re.compile("\s*tcpOutDataSegs\s*=\s*(\d+)\s*"), 'system.net.tcp.in_segs'),
+    (re.compile("\s*tcpInSegs\s*=\s*(\d+)\s*"), 'system.net.tcp.out_segs')
+]
+
 
 class Network(AgentCheck):
 
@@ -42,18 +44,18 @@ class Network(AgentCheck):
     }
 
     NETSTAT_GAUGE = {
-        ('udp4', 'connections') : 'system.net.udp4.connections',
-        ('udp6', 'connections') : 'system.net.udp6.connections',
-        ('tcp4', 'established') : 'system.net.tcp4.established',
-        ('tcp4', 'opening') : 'system.net.tcp4.opening',
-        ('tcp4', 'closing') : 'system.net.tcp4.closing',
-        ('tcp4', 'listening') : 'system.net.tcp4.listening',
-        ('tcp4', 'time_wait') : 'system.net.tcp4.time_wait',
-        ('tcp6', 'established') : 'system.net.tcp6.established',
-        ('tcp6', 'opening') : 'system.net.tcp6.opening',
-        ('tcp6', 'closing') : 'system.net.tcp6.closing',
-        ('tcp6', 'listening') : 'system.net.tcp6.listening',
-        ('tcp6', 'time_wait') : 'system.net.tcp6.time_wait',
+        ('udp4', 'connections'): 'system.net.udp4.connections',
+        ('udp6', 'connections'): 'system.net.udp6.connections',
+        ('tcp4', 'established'): 'system.net.tcp4.established',
+        ('tcp4', 'opening'): 'system.net.tcp4.opening',
+        ('tcp4', 'closing'): 'system.net.tcp4.closing',
+        ('tcp4', 'listening'): 'system.net.tcp4.listening',
+        ('tcp4', 'time_wait'): 'system.net.tcp4.time_wait',
+        ('tcp6', 'established'): 'system.net.tcp6.established',
+        ('tcp6', 'opening'): 'system.net.tcp6.opening',
+        ('tcp6', 'closing'): 'system.net.tcp6.closing',
+        ('tcp6', 'listening'): 'system.net.tcp6.listening',
+        ('tcp6', 'time_wait'): 'system.net.tcp6.time_wait',
     }
 
     def __init__(self, name, init_config, agentConfig, instances=None):
@@ -114,7 +116,7 @@ class Network(AgentCheck):
                 return 0
 
     def _submit_regexed_values(self, output, regex_list):
-        lines=output.split("\n")
+        lines = output.split("\n")
         for line in lines:
             for regex, metric in regex_list:
                 value = re.match(regex, line)
@@ -156,7 +158,6 @@ class Network(AgentCheck):
             for metric, value in metrics.iteritems():
                 self.gauge(metric, value)
 
-
         proc = open('/proc/net/dev', 'r')
         try:
             lines = proc.readlines()
@@ -166,7 +167,8 @@ class Network(AgentCheck):
         #  face |bytes     packets errs drop fifo frame compressed multicast|bytes       packets errs drop fifo colls carrier compressed
         #     lo:45890956   112797   0    0    0     0          0         0    45890956   112797    0    0    0     0       0          0
         #   eth0:631947052 1042233   0   19    0   184          0      1206  1208625538  1320529    0    0    0     0       0          0
-        #   eth1:       0        0   0    0    0     0          0         0           0        0    0    0    0     0       0          0
+        # eth1:       0        0   0    0    0     0          0         0
+        # 0        0    0    0    0     0       0          0
         for l in lines[2:]:
             cols = l.split(':', 1)
             x = cols[1].split()
@@ -179,7 +181,7 @@ class Network(AgentCheck):
                     'packets_in.count': self._parse_value(x[1]),
                     'packets_in.error': self._parse_value(x[2]) + self._parse_value(x[3]),
                     'packets_out.count': self._parse_value(x[9]),
-                    'packets_out.error':self._parse_value(x[10]) + self._parse_value(x[11]),
+                    'packets_out.error': self._parse_value(x[10]) + self._parse_value(x[11]),
                 }
                 self._submit_devicemetrics(iface, metrics)
 
@@ -207,16 +209,16 @@ class Network(AgentCheck):
             column_names = tcp_lines[0].strip().split()
             values = tcp_lines[1].strip().split()
 
-            tcp_metrics = dict(zip(column_names,values))
+            tcp_metrics = dict(zip(column_names, values))
 
             # line start indicating what kind of metrics we're looking at
-            assert(tcp_metrics['Tcp:']=='Tcp:')
+            assert(tcp_metrics['Tcp:'] == 'Tcp:')
 
             tcp_metrics_name = {
                 'RetransSegs': 'system.net.tcp.retrans_segs',
-                'InSegs'     : 'system.net.tcp.in_segs',
-                'OutSegs'    : 'system.net.tcp.out_segs'
-                }
+                'InSegs': 'system.net.tcp.in_segs',
+                'OutSegs': 'system.net.tcp.out_segs'
+            }
 
             for key, metric in tcp_metrics_name.iteritems():
                 self.rate(metric, self._parse_value(tcp_metrics[key]))
@@ -251,7 +253,8 @@ class Network(AgentCheck):
         # ham0  1404  <Link#6>    7a:79:05:4d:bf:f5    30100     0    6815204    18742     0    8494811     0
         # ham0  1404  5             5.77.191.245       30100     -    6815204    18742     -    8494811     -
         # ham0  1404  seneca.loca fe80:6::7879:5ff:    30100     -    6815204    18742     -    8494811     -
-        # ham0  1404  2620:9b::54 2620:9b::54d:bff5    30100     -    6815204    18742     -    8494811     -
+        # ham0  1404  2620:9b::54 2620:9b::54d:bff5    30100     -    6815204
+        # 18742     -    8494811     -
 
         lines = netstat.split("\n")
         headers = lines[0].split()
@@ -292,15 +295,14 @@ class Network(AgentCheck):
                     'packets_in.count': self._parse_value(x[-7]),
                     'packets_in.error': self._parse_value(x[-6]),
                     'packets_out.count': self._parse_value(x[-4]),
-                    'packets_out.error':self._parse_value(x[-3]),
+                    'packets_out.error': self._parse_value(x[-3]),
                 }
                 self._submit_devicemetrics(iface, metrics)
 
-
-        netstat = subprocess.Popen(["netstat", "-s","-p" "tcp"],
+        netstat = subprocess.Popen(["netstat", "-s", "-p" "tcp"],
                                    stdout=subprocess.PIPE,
                                    close_fds=True).communicate()[0]
-        #3651535 packets sent
+        # 3651535 packets sent
         #        972097 data packets (615753248 bytes)
         #        5009 data packets (2832232 bytes) retransmitted
         #        0 resends initiated by MTU discovery
@@ -313,13 +315,12 @@ class Network(AgentCheck):
         #        3058232 checksummed in software
         #        3058232 segments (571218834 bytes) over IPv4
         #        0 segments (0 bytes) over IPv6
-        #4807551 packets received
+        # 4807551 packets received
         #        1143534 acks (for 616095538 bytes)
         #        165400 duplicate acks
         #        ...
 
         self._submit_regexed_values(netstat, BSD_TCP_METRICS)
-
 
     def _check_solaris(self, instance):
         # Can't get bytes sent and received via netstat
@@ -331,9 +332,9 @@ class Network(AgentCheck):
         for interface, metrics in metrics_by_interface.iteritems():
             self._submit_devicemetrics(interface, metrics)
 
-        netstat = subprocess.Popen(["netstat", "-s","-P" "tcp"],
-                                    stdout=subprocess.PIPE,
-                                    close_fds=True).communicate()[0]
+        netstat = subprocess.Popen(["netstat", "-s", "-P" "tcp"],
+                                   stdout=subprocess.PIPE,
+                                   close_fds=True).communicate()[0]
         # TCP: tcpRtoAlgorithm=     4 tcpRtoMin           =   200
         # tcpRtoMax           = 60000 tcpMaxConn          =    -1
         # tcpActiveOpens      =    57 tcpPassiveOpens     =    50
@@ -344,7 +345,6 @@ class Network(AgentCheck):
         # tcpOutAck           =   185 tcpOutAckDelayed    =     4
         # ...
         self._submit_regexed_values(netstat, SOLARIS_TCP_METRICS)
-
 
     def _parse_solaris_netstat(self, netstat_output):
         """
@@ -412,12 +412,12 @@ class Network(AgentCheck):
 
         # A mapping of solaris names -> datadog names
         metric_by_solaris_name = {
-            'rbytes64':'bytes_rcvd',
-            'obytes64':'bytes_sent',
-            'ipackets64':'packets_in.count',
-            'ierrors':'packets_in.error',
-            'opackets64':'packets_out.count',
-            'oerrors':'packets_out.error',
+            'rbytes64': 'bytes_rcvd',
+            'obytes64': 'bytes_sent',
+            'ipackets64': 'packets_in.count',
+            'ierrors': 'packets_in.error',
+            'opackets64': 'packets_out.count',
+            'oerrors': 'packets_out.error',
         }
 
         lines = [l for l in netstat_output.split("\n") if len(l) > 0]

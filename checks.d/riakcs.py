@@ -35,8 +35,8 @@ class RiakCs(AgentCheck):
         stats = self._get_stats(s3, aggregation_key)
 
         self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.OK,
-          tags=["aggregation_key:{0}".format(aggregation_key)])
-        
+                           tags=["aggregation_key:{0}".format(aggregation_key)])
+
         self.process_stats(stats, tags)
 
     def process_stats(self, stats, tags):
@@ -50,7 +50,6 @@ class RiakCs(AgentCheck):
             for i, value in enumerate(values):
                 metric_name = "riakcs.{0}.{1}".format(key, legend[i])
                 self.gauge(metric_name, value, tags=tags)
-
 
     def _connect(self, instance):
         for e in ("access_id", "access_secret"):
@@ -75,8 +74,8 @@ class RiakCs(AgentCheck):
         except Exception, e:
             self.log.error("Error connecting to {0}: {1}".format(aggregation_key, e))
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-              tags=["aggregation_key:{0}".format(aggregation_key)],
-              message=str(e))
+                               tags=["aggregation_key:{0}".format(aggregation_key)],
+                               message=str(e))
             raise
 
         tags = instance.get("tags", [])
@@ -94,12 +93,11 @@ class RiakCs(AgentCheck):
         except Exception, e:
             self.log.error("Error retrieving stats from {0}: {1}".format(aggregation_key, e))
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-              tags=["aggregation_key:{0}".format(aggregation_key)],
-              message=str(e))
+                               tags=["aggregation_key:{0}".format(aggregation_key)],
+                               message=str(e))
             raise
 
         return stats
-
 
     # We need this as the riak cs stats page returns json with duplicate keys
     @classmethod

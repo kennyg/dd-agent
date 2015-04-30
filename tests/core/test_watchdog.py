@@ -12,6 +12,7 @@ from util import Watchdog
 
 
 class TestWatchdog(unittest.TestCase):
+
     """Test watchdog in various conditions
     """
 
@@ -73,6 +74,7 @@ class TestWatchdog(unittest.TestCase):
 
 
 class MockTxManager(object):
+
     def flush(self):
         "Pretend to flush for a long time"
         time.sleep(5)
@@ -80,6 +82,7 @@ class MockTxManager(object):
 
 
 class MemoryHogTxManager(object):
+
     def flush(self):
         rand_data = []
         while True:
@@ -87,7 +90,9 @@ class MemoryHogTxManager(object):
 
 
 class PseudoAgent(object):
+
     """Same logic as the agent, simplified"""
+
     def busy_run(self):
         w = Watchdog(5)
         w.reset()

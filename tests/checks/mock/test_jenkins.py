@@ -26,6 +26,7 @@ instances:
         jenkins_home: <JENKINS_HOME>
 """
 
+
 def dict_to_xml(metadata_dict):
     """ Convert a dict to xml for use in a build.xml file """
     build = ET.Element('build')
@@ -35,9 +36,11 @@ def dict_to_xml(metadata_dict):
 
     return ET.tostring(build)
 
+
 def write_file(file_name, log_data):
     with open(file_name, 'w') as log_file:
         log_file.write(log_data)
+
 
 class TestJenkins(unittest.TestCase):
 
@@ -120,7 +123,6 @@ class TestJenkins(unittest.TestCase):
             assert 'result:SUCCESS' in tag.get('tags')
             assert 'build_number:99' in tag.get('tags')
 
-
     def testCheckUnsuccessfulEvent(self):
         """
         Test that an unsuccessful build will create the correct metrics.
@@ -147,7 +149,6 @@ class TestJenkins(unittest.TestCase):
             assert 'job_name:foo' in tag.get('tags')
             assert 'result:ABORTED' in tag.get('tags')
             assert 'build_number:99' in tag.get('tags')
-
 
     def testCheckWithRunningBuild(self):
         """

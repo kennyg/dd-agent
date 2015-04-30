@@ -5,6 +5,7 @@ import time
 
 from util import EC2
 
+
 class TestEC2(unittest.TestCase):
 
     def test_metadata(self):
@@ -19,7 +20,7 @@ class TestEC2(unittest.TestCase):
         assert len(d) == 0 or len(d) >= 7, d
         if "instance-id" in d:
             assert d["instance-id"].startswith("i-"), d
-        assert end - start <= 1.1, "It took %s seconds to get ec2 metadata" % (end-start)
+        assert end - start <= 1.1, "It took %s seconds to get ec2 metadata" % (end - start)
 
 if __name__ == "__main__":
     unittest.main()

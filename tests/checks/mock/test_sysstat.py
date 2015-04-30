@@ -28,7 +28,8 @@ class TestSystem(unittest.TestCase):
         if Platform.is_linux():
             cores = int(get_system_stats().get('cpuCores'))
             assert 'system.load.norm.1' in res
-            assert abs(res['system.load.1'] - cores * res['system.load.norm.1']) <= 0.1, (res['system.load.1'], cores * res['system.load.norm.1'])
+            assert abs(res['system.load.1'] - cores * res['system.load.norm.1']
+                       ) <= 0.1, (res['system.load.1'], cores * res['system.load.norm.1'])
 
         # same test but without cpu count, no normalized load sent.
         res = load.check({})
@@ -118,17 +119,18 @@ none                  985964       1  985963    1% /lib/init/rw
         assert res[0][:4] == ["/dev/sda1", 8256952, 5600592,  2236932], res[0]
         assert len(res) == 15, len(res)
 
-        res = disk.parse_df_output(TestSystem.linux_df_i, 'linux2', inodes = True)
+        res = disk.parse_df_output(TestSystem.linux_df_i, 'linux2', inodes=True)
         assert res[0][:4] == ["/dev/sda1", 524288, 171642, 352646], res[0]
         assert res[1][:4] == ["/dev/sdb", 27525120, 147, 27524973], res[1]
         assert res[2][:4] == ["/dev/sdf", 46474080, 478386, 45995694], res[2]
 
-        res = disk.parse_df_output(TestSystem.linux_df_k, 'linux2', use_mount = True)
+        res = disk.parse_df_output(TestSystem.linux_df_k, 'linux2', use_mount=True)
         assert res[0][:4] == ["/", 8256952, 5600592,  2236932], res[0]
         assert res[2][:4] == ["/data", 52403200, 40909112, 11494088], res[2]
         assert res[3][:4] == ["/data2", 52403200, 40909112, 11494088], res[3]
         assert res[4][:4] == ["/data3", 52403200, 40909112, 11494088], res[4]
-        assert res[-1][:4] == ["/var/lib/postgresql/9.1/index05", 31441920, 3519356, 27922564], res[-1]
+        assert res[-1][:4] == ["/var/lib/postgresql/9.1/index05",
+                               31441920, 3519356, 27922564], res[-1]
 
     def test_collecting_disk_metrics(self):
         """Testing disk stats gathering"""
@@ -144,7 +146,8 @@ none                  985964       1  985963    1% /lib/init/rw
         global logger
         res = Memory(logger).check({})
         if Platform.is_linux():
-            MEM_METRICS = ["swapTotal", "swapFree", "swapPctFree", "swapUsed", "physTotal", "physFree", "physUsed", "physBuffers", "physCached", "physUsable", "physPctUsable", "physShared"]
+            MEM_METRICS = ["swapTotal", "swapFree", "swapPctFree", "swapUsed", "physTotal", "physFree",
+                           "physUsed", "physBuffers", "physCached", "physUsable", "physPctUsable", "physShared"]
             for k in MEM_METRICS:
                 # % metric is only here if total > 0
                 if k == 'swapPctFree' and res['swapTotal'] == 0:
@@ -216,11 +219,11 @@ sda               0.00     0.00  0.00  0.00     0.00     0.00     0.00     0.00 
 
         self.assertEqual(
             results["disk0"],
-            {'system.io.bytes_per_s': float(0.02 * 10**6),}
+            {'system.io.bytes_per_s': float(0.02 * 10**6), }
         )
         self.assertEqual(
             results["disk1"],
-            {'system.io.bytes_per_s': float(0),}
+            {'system.io.bytes_per_s': float(0), }
         )
 
     def testNetwork(self):
@@ -251,4 +254,3 @@ instances:
             assert 'system.net.tcp.retrans_packs' in metric_names
             assert 'system.net.tcp.sent_packs' in metric_names
             assert 'system.net.tcp.rcv_packs' in metric_names
-

@@ -98,7 +98,8 @@ class VarnishCheckTest(AgentCheckTest):
 
     def test_check(self):
         varnishstat_path = which('varnishstat')
-        self.assertTrue(varnishstat_path is not None, "Flavored testing should be run with a real varnish")
+        self.assertTrue(
+            varnishstat_path is not None, "Flavored testing should be run with a real varnish")
 
         config = {
             'instances': [{

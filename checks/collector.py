@@ -29,7 +29,9 @@ log = logging.getLogger(__name__)
 FLUSH_LOGGING_PERIOD = 10
 FLUSH_LOGGING_INITIAL = 5
 
+
 class Collector(object):
+
     """
     The collector is responsible for collecting data from each check and
     passing it along to the emitters, who send it to their final destination.
@@ -52,7 +54,7 @@ class Collector(object):
                 'interval': int(agentConfig.get('metadata_interval', 4 * 60 * 60))
             },
             'external_host_tags': {
-                'start': time.time() - 3 * 60, # Wait for the checks to init
+                'start': time.time() - 3 * 60,  # Wait for the checks to init
                 'interval': int(agentConfig.get('external_host_tags', 5 * 60))
             },
             'agent_checks': {
@@ -100,17 +102,19 @@ class Collector(object):
 
         # Custom metric checks
         for module_spec in [s.strip() for s in self.agentConfig.get('custom_checks', '').split(',')]:
-            if len(module_spec) == 0: continue
+            if len(module_spec) == 0:
+                continue
             try:
                 self._metrics_checks.append(modules.load(module_spec, 'Check')(log))
                 log.info("Registered custom check %s" % module_spec)
-                log.warning("Old format custom checks are deprecated. They should be moved to the checks.d interface as old custom checks will be removed in a next version")
+                log.warning(
+                    "Old format custom checks are deprecated. They should be moved to the checks.d interface as old custom checks will be removed in a next version")
             except Exception, e:
                 log.exception('Unable to load custom check module %s' % module_spec)
 
         # Resource Checks
         self._resources_checks = [
-            ResProcesses(log,self.agentConfig)
+            ResProcesses(log, self.agentConfig)
         ]
 
     def stop(self):
@@ -142,8 +146,10 @@ class Collector(object):
         events = payload['events']
         service_checks = payload['service_checks']
         if checksd:
-            self.initialized_checks_d = checksd['initialized_checks'] # is of type {check_name: check}
-            self.init_failed_checks_d = checksd['init_failed_checks'] # is of type {check_name: {error, traceback}}
+            # is of type {check_name: check}
+            self.initialized_checks_d = checksd['initialized_checks']
+            # is of type {check_name: {error, traceback}}
+            self.init_failed_checks_d = checksd['init_failed_checks']
         # Run the system checks. Checks will depend on the OS
         if self.os == 'windows':
             # Win32 system checks
@@ -175,16 +181,16 @@ class Collector(object):
 
             if memory:
                 payload.update({
-                    'memPhysUsed' : memory.get('physUsed'),
-                    'memPhysPctUsable' : memory.get('physPctUsable'),
-                    'memPhysFree' : memory.get('physFree'),
-                    'memPhysTotal' : memory.get('physTotal'),
-                    'memPhysUsable' : memory.get('physUsable'),
-                    'memSwapUsed' : memory.get('swapUsed'),
-                    'memSwapFree' : memory.get('swapFree'),
-                    'memSwapPctFree' : memory.get('swapPctFree'),
-                    'memSwapTotal' : memory.get('swapTotal'),
-                    'memCached' : memory.get('physCached'),
+                    'memPhysUsed': memory.get('physUsed'),
+                    'memPhysPctUsable': memory.get('physPctUsable'),
+                    'memPhysFree': memory.get('physFree'),
+                    'memPhysTotal': memory.get('physTotal'),
+                    'memPhysUsable': memory.get('physUsable'),
+                    'memSwapUsed': memory.get('swapUsed'),
+                    'memSwapFree': memory.get('swapFree'),
+                    'memSwapPctFree': memory.get('swapPctFree'),
+                    'memSwapTotal': memory.get('swapTotal'),
+                    'memCached': memory.get('physCached'),
                     'memBuffers': memory.get('physBuffers'),
                     'memShared': memory.get('physShared')
                 })
@@ -204,7 +210,6 @@ class Collector(object):
         gangliaData = self._ganglia.check(self.agentConfig)
         dogstreamData = self._dogstream.check(self.agentConfig)
         ddforwarderData = self._ddforwarder.check(self.agentConfig)
-
 
         if gangliaData is not False and gangliaData is not None:
             payload['ganglia'] = gangliaData
@@ -233,8 +238,8 @@ class Collector(object):
                 snaps = resources_check.pop_snapshots()
                 if snaps:
                     has_resource = True
-                    res_value = { 'snaps': snaps,
-                                  'format_version': resources_check.get_format_version() }
+                    res_value = {'snaps': snaps,
+                                 'format_version': resources_check.get_format_version()}
                     res_format = resources_check.describe_format_if_needed()
                     if res_format is not None:
                         res_value['format_description'] = res_format
@@ -242,9 +247,9 @@ class Collector(object):
 
             if has_resource:
                 payload['resources']['meta'] = {
-                            'api_key': self.agentConfig['api_key'],
-                            'host': payload['internalHostname'],
-                        }
+                    'api_key': self.agentConfig['api_key'],
+                    'host': payload['internalHostname'],
+                }
 
         # newer-style checks (not checks.d style)
         for metrics_check in self._metrics_checks:
@@ -286,8 +291,8 @@ class Collector(object):
                 log.exception("Error running check %s" % check.name)
 
             check_status = CheckStatus(check.name, instance_statuses, metric_count, event_count, service_check_count,
-                library_versions=check.get_library_info(),
-                source_type_name=check.SOURCE_TYPE_NAME or check.name)
+                                       library_versions=check.get_library_info(),
+                                       source_type_name=check.SOURCE_TYPE_NAME or check.name)
 
             # Service check for Agent checks failures
             service_check_tags = ["check:%s" % check.name]
@@ -326,7 +331,7 @@ class Collector(object):
 
         # Add a service check for the agent
         service_checks.append(create_service_check('datadog.agent.up', AgentCheck.OK,
-            hostname=self.hostname))
+                                                   hostname=self.hostname))
 
         # Store the metrics and events in the payload.
         payload['metrics'] = metrics
@@ -363,11 +368,10 @@ class Collector(object):
 
         if self.os != 'windows':
             payload['metrics'].extend(self._agent_metrics.check(payload, self.agentConfig,
-                collect_duration, self.emit_duration, time.clock() - cpu_clock))
+                                                                collect_duration, self.emit_duration, time.clock() - cpu_clock))
         else:
             payload['metrics'].extend(self._agent_metrics.check(payload, self.agentConfig,
-                collect_duration, self.emit_duration))
-
+                                                                collect_duration, self.emit_duration))
 
         emitter_statuses = self._emit(payload)
         self.emit_duration = timer.step()
@@ -380,13 +384,14 @@ class Collector(object):
 
         if self.run_count <= FLUSH_LOGGING_INITIAL or self.run_count % FLUSH_LOGGING_PERIOD == 0:
             log.info("Finished run #%s. Collection time: %ss. Emit time: %ss" %
-                    (self.run_count, round(collect_duration, 2), round(self.emit_duration, 2)))
+                     (self.run_count, round(collect_duration, 2), round(self.emit_duration, 2)))
             if self.run_count == FLUSH_LOGGING_INITIAL:
-                log.info("First flushes done, next flushes will be logged every %s flushes." % FLUSH_LOGGING_PERIOD)
+                log.info("First flushes done, next flushes will be logged every %s flushes." %
+                         FLUSH_LOGGING_PERIOD)
 
         else:
             log.debug("Finished run #%s. Collection time: %ss. Emit time: %ss" %
-                    (self.run_count, round(collect_duration, 2), round(self.emit_duration, 2)))
+                      (self.run_count, round(collect_duration, 2), round(self.emit_duration, 2)))
 
         return payload
 
@@ -417,16 +422,16 @@ class Collector(object):
         now = time.time()
         payload = {
             'collection_timestamp': now,
-            'os' : self.os,
+            'os': self.os,
             'python': sys.version,
-            'agentVersion' : self.agentConfig['version'],
+            'agentVersion': self.agentConfig['version'],
             'apiKey': self.agentConfig['api_key'],
             'events': {},
             'metrics': [],
             'service_checks': [],
             'resources': {},
-            'internalHostname' : self.hostname,
-            'uuid' : get_uuid(),
+            'internalHostname': self.hostname,
+            'uuid': get_uuid(),
             'host-tags': {},
             'external_host_tags': {}
         }
@@ -436,11 +441,11 @@ class Collector(object):
             payload['systemStats'] = self.agentConfig.get('system_stats', {})
             # Also post an event in the newsfeed
             payload['events']['System'] = [{'api_key': self.agentConfig['api_key'],
-                                 'host': payload['internalHostname'],
-                                 'timestamp': now,
-                                 'event_type':'Agent Startup',
-                                 'msg_text': 'Version %s' % get_version()
-                                 }]
+                                            'host': payload['internalHostname'],
+                                            'timestamp': now,
+                                            'event_type':'Agent Startup',
+                                            'msg_text': 'Version %s' % get_version()
+                                            }]
 
         # Periodically send the host metadata.
         if self._should_send_additional_data('metadata'):
@@ -469,7 +474,8 @@ class Collector(object):
             # Add static tags from the configuration file
             host_tags = []
             if self.agentConfig['tags'] is not None:
-                host_tags.extend([unicode(tag.strip()) for tag in self.agentConfig['tags'].split(",")])
+                host_tags.extend([unicode(tag.strip())
+                                  for tag in self.agentConfig['tags'].split(",")])
 
             if self.agentConfig['collect_ec2_tags']:
                 host_tags.extend(EC2.get_tags(self.agentConfig))
@@ -483,7 +489,8 @@ class Collector(object):
 
             # Log the metadata on the first run
             if self._is_first_run():
-                log.info("Hostnames: %s, tags: %s" % (repr(self.metadata_cache), payload['host-tags']))
+                log.info("Hostnames: %s, tags: %s" %
+                         (repr(self.metadata_cache), payload['host-tags']))
 
         # Periodically send extra hosts metadata (vsphere)
         # Metadata of hosts that are not the host where the agent runs, not all the checks use
@@ -536,5 +543,3 @@ class Collector(object):
             return True
 
         return False
-
-

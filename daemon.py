@@ -24,7 +24,9 @@ from psutil import pid_exists
 
 log = logging.getLogger(__name__)
 
+
 class AgentSupervisor(object):
+
     ''' A simple supervisor to keep a restart a child on expected auto-restarts
     '''
     RESTART_EXIT_STATUS = 5
@@ -90,11 +92,13 @@ class AgentSupervisor(object):
 
 
 class Daemon(object):
+
     """
     A generic daemon class.
 
     Usage: subclass the Daemon class and override the run() method
     """
+
     def __init__(self, pidfile, stdin=os.devnull, stdout=os.devnull, stderr=os.devnull, autorestart=False):
         self.autorestart = autorestart
         self.stdin = stdin
@@ -142,7 +146,7 @@ class Daemon(object):
                 sys.stderr.write(msg + "\n")
                 sys.exit(1)
 
-        if sys.platform != 'darwin': # This block breaks on OS X
+        if sys.platform != 'darwin':  # This block breaks on OS X
             # Redirect standard file descriptors
             sys.stdout.flush()
             sys.stderr.flush()
@@ -155,7 +159,6 @@ class Daemon(object):
 
         log.info("Daemon started")
 
-
     def start(self, foreground=False):
         log.info("Starting")
         pid = self.pid()
@@ -163,11 +166,11 @@ class Daemon(object):
         if pid:
             # Check if the pid in the pidfile corresponds to a running process
             if pid_exists(pid):
-                log.error("Not starting, another instance is already running"\
+                log.error("Not starting, another instance is already running"
                           " (using pidfile {0})".format(self.pidfile))
                 sys.exit(1)
             else:
-                log.warn('pidfile contains the pid of a stopped process.'\
+                log.warn('pidfile contains the pid of a stopped process.'
                          ' Starting normally')
 
         log.info("Pidfile: %s" % self.pidfile)
@@ -175,7 +178,6 @@ class Daemon(object):
             self.daemonize()
         self.write_pidfile()
         self.run()
-
 
     def stop(self):
         log.info("Stopping daemon")
@@ -211,14 +213,12 @@ class Daemon(object):
             if os.path.exists(self.pidfile):
                 os.remove(self.pidfile)
 
-            return # Not an error in a restart
-
+            return  # Not an error in a restart
 
     def restart(self):
         "Restart the daemon"
         self.stop()
         self.start()
-
 
     def run(self):
         """
@@ -227,14 +227,12 @@ class Daemon(object):
         """
         raise NotImplementedError
 
-
     def info(self):
         """
         You should override this method when you subclass Daemon. It will be
         called to provide information about the status of the process
         """
         raise NotImplementedError
-
 
     def status(self):
         """
@@ -257,7 +255,8 @@ class Daemon(object):
                 os.kill(pid, 0)
             except OSError, e:
                 if e.errno != errno.EPERM:
-                    message = '%s pidfile contains pid %s, but no running process could be found' % (self.__class__.__name__, pid)
+                    message = '%s pidfile contains pid %s, but no running process could be found' % (
+                        self.__class__.__name__, pid)
                 else:
                     message = 'You do not have sufficient permissions'
                 exit_code = 1
@@ -269,7 +268,6 @@ class Daemon(object):
         log.info(message)
         sys.stdout.write(message + "\n")
         sys.exit(exit_code)
-
 
     def pid(self):
         # Get the pid from the pidfile
@@ -283,10 +281,9 @@ class Daemon(object):
         except ValueError:
             return None
 
-
     def write_pidfile(self):
         # Write pidfile
-        atexit.register(self.delpid) # Make sure pid file is removed if we quit
+        atexit.register(self.delpid)  # Make sure pid file is removed if we quit
         pid = str(os.getpid())
         try:
             fp = open(self.pidfile, 'w+')
@@ -298,7 +295,6 @@ class Daemon(object):
             log.exception(msg)
             sys.stderr.write(msg + "\n")
             sys.exit(1)
-
 
     def delpid(self):
         try:

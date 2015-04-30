@@ -5,7 +5,7 @@ import traceback
 import re
 import time
 from datetime import datetime
-from itertools import groupby # >= python 2.4
+from itertools import groupby  # >= python 2.4
 
 # project
 import modules
@@ -24,15 +24,19 @@ else:
         else:
             return s[0:pos], sep, s[pos + len(sep):]
 
+
 def point_sorter(p):
     # Sort and group by timestamp, metric name, host_name, device_name
     return (p[1], p[0], p[3].get('host_name', None), p[3].get('device_name', None))
 
+
 class EventDefaults(object):
-    EVENT_TYPE   = 'dogstream_event'
+    EVENT_TYPE = 'dogstream_event'
     EVENT_OBJECT = 'dogstream_event:default'
 
+
 class Dogstreams(object):
+
     @classmethod
     def init(cls, logger, config):
         dogstreams_config = config.get('dogstreams', None)
@@ -81,7 +85,8 @@ class Dogstreams(object):
             try:
                 result = dogstream.check(agentConfig, move_end)
                 # result may contain {"dogstream": [new]}.
-                # If output contains {"dogstream": [old]}, that old value will get concatenated with the new value
+                # If output contains {"dogstream": [old]}, that old value will get
+                # concatenated with the new value
                 assert type(result) == type(output), "dogstream.check must return a dictionary"
                 for k in result:
                     if k in output:
@@ -91,6 +96,7 @@ class Dogstreams(object):
             except Exception:
                 self.logger.exception("Error in parsing %s" % (dogstream.log_path))
         return output
+
 
 class Dogstream(object):
 
@@ -121,7 +127,8 @@ class Dogstream(object):
                     parser_spec,
                     os.environ.get('PYTHONPATH', ''))
                 )
-            logger.info("dogstream: parsing %s with %s (requested %s)" % (log_path, parse_func, parser_spec))
+            logger.info("dogstream: parsing %s with %s (requested %s)" %
+                        (log_path, parse_func, parser_spec))
         else:
             logger.info("dogstream: parsing %s with default parser" % log_path)
 
@@ -140,7 +147,7 @@ class Dogstream(object):
 
         self._gen = None
         self._values = None
-        self._freq = 15 # Will get updated on each check()
+        self._freq = 15  # Will get updated on each check()
         self._error_count = 0L
         self._line_count = 0L
         self.parser_state = {}
@@ -153,12 +160,14 @@ class Dogstream(object):
 
             # Build our tail -f
             if self._gen is None:
-                self._gen = TailFile(self.logger, self.log_path, self._line_parser).tail(line_by_line=False, move_end=move_end)
+                self._gen = TailFile(self.logger, self.log_path, self._line_parser).tail(
+                    line_by_line=False, move_end=move_end)
 
             # read until the end of file
             try:
                 self._gen.next()
-                self.logger.debug("Done dogstream check for file %s, found %s metric points" % (self.log_path, len(self._values)))
+                self.logger.debug(
+                    "Done dogstream check for file %s, found %s metric points" % (self.log_path, len(self._values)))
             except StopIteration, e:
                 self.logger.exception(e)
                 self.logger.warn("Can't tail %s file" % self.log_path)
@@ -182,7 +191,8 @@ class Dogstream(object):
                 parsed = self.parse_func.parse_line(line)
             else:
                 try:
-                    parsed = self.parse_func(self.logger, line, self.parser_state, *self.parse_args)
+                    parsed = self.parse_func(
+                        self.logger, line, self.parser_state, *self.parse_args)
                 except TypeError, e:
                     # Arity of parse_func is 3 (old-style), not 4
                     parsed = self.parse_func(self.logger, line)
@@ -211,7 +221,8 @@ class Dogstream(object):
                     # FIXME when the backend treats those as true synonyms, we can
                     # deprecate event_object.
                     if 'event_object' in datum or 'aggregation_key' in datum:
-                        datum['aggregation_key'] = datum.get('event_object', datum.get('aggregation_key'))
+                        datum['aggregation_key'] = datum.get(
+                            'event_object', datum.get('aggregation_key'))
                     else:
                         datum['aggregation_key'] = EventDefaults.EVENT_OBJECT
                     datum['event_object'] = datum['aggregation_key']
@@ -242,7 +253,7 @@ class Dogstream(object):
 
                 if invalid_reasons:
                     self.logger.debug('Invalid parsed values %s (%s): "%s"',
-                        repr(datum), ', '.join(invalid_reasons), line)
+                                      repr(datum), ', '.join(invalid_reasons), line)
                 else:
                     self._values.append((metric, ts, value, attrs))
         except Exception, e:
@@ -294,7 +305,7 @@ class Dogstream(object):
                 val = vals[0]
             elif len(vals) > 1:
                 val = vals[-1]
-            else: # len(vals) == 0
+            else:  # len(vals) == 0
                 continue
 
             metric_type = str(attributes.get('metric_type', '')).lower()
@@ -311,12 +322,15 @@ class Dogstream(object):
             return {}
 
 # Allow a smooth uninstall of previous version
-class RollupLP: pass
+
+
+class RollupLP:
+    pass
 
 
 class DdForwarder(object):
 
-    QUEUE_SIZE  = "queue_size"
+    QUEUE_SIZE = "queue_size"
     QUEUE_COUNT = "queue_count"
 
     RE_QUEUE_STAT = re.compile(r"\[.*\] Queue size: at (.*), (\d+) transaction\(s\), (\d+) KB")
@@ -351,13 +365,13 @@ class DdForwarder(object):
 
         if self.log_path and os.path.isfile(self.log_path):
 
-            #reset metric points
+            # reset metric points
             self._init_metrics()
 
             # Build our tail -f
             if self._gen is None:
                 self._gen = TailFile(self.logger, self.log_path, self._parse_line).tail(line_by_line=False,
-                    move_end=move_end)
+                                                                                        move_end=move_end)
 
             # read until the end of file
             try:
@@ -367,7 +381,7 @@ class DdForwarder(object):
                 self.logger.exception(e)
                 self.logger.warn("Can't tail %s file" % self.log_path)
 
-            return { 'ddforwarder': self.metrics }
+            return {'ddforwarder': self.metrics}
         else:
             self.logger.debug("Can't tail datadog forwarder log file: %s" % self.log_path)
             return {}
@@ -380,7 +394,7 @@ def testddForwarder():
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
 
-    config = {'api_key':'my_apikey', 'ddforwarder_log': sys.argv[1]}
+    config = {'api_key': 'my_apikey', 'ddforwarder_log': sys.argv[1]}
     dd = DdForwarder(logger, config)
     m = dd.check(config, move_end=False)
     while True:

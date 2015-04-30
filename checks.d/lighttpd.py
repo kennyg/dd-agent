@@ -13,6 +13,7 @@ VERSION_REGEX = re.compile(r".*/(\d)")
 
 
 class Lighttpd(AgentCheck):
+
     """Tracks basic connection/requests/workers metrics
 
     See http://redmine.lighttpd.net/projects/1/wiki/Docs_ModStatus for Lighttpd details
@@ -74,7 +75,8 @@ class Lighttpd(AgentCheck):
         if 'lighttpd_status_url' not in instance:
             raise Exception("Missing 'lighttpd_status_url' variable in Lighttpd config")
 
-        url = self.assumed_url.get(instance['lighttpd_status_url'], instance['lighttpd_status_url'])
+        url = self.assumed_url.get(
+            instance['lighttpd_status_url'], instance['lighttpd_status_url'])
 
         tags = instance.get('tags', [])
         self.log.debug("Connecting to %s" % url)
@@ -140,7 +142,8 @@ class Lighttpd(AgentCheck):
             url_suffix = self.URL_SUFFIX_PER_VERSION[server_version]
             if self.assumed_url.get(instance['lighttpd_status_url']) is None and url[-len(url_suffix):] != url_suffix:
                 self.assumed_url[instance['lighttpd_status_url']] = '%s%s' % (url, url_suffix)
-                self.warning("Assuming url was not correct. Trying to add %s suffix to the url" % url_suffix)
+                self.warning(
+                    "Assuming url was not correct. Trying to add %s suffix to the url" % url_suffix)
                 self.check(instance)
             else:
                 raise Exception("No metrics were fetched for this instance. Make sure "

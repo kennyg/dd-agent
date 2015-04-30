@@ -12,6 +12,7 @@ class ShouldRestartException(Exception):
 
 
 class PgBouncer(AgentCheck):
+
     """Collects metrics from pgbouncer
     """
     RATE = AgentCheck.rate
@@ -131,7 +132,8 @@ class PgBouncer(AgentCheck):
                 self.log.debug('pgbouncer status: %s' % AgentCheck.OK)
 
             except Exception:
-                message = u'Cannot establish connection to pgbouncer://%s:%s/%s' % (host, port, self.DB_NAME)
+                message = u'Cannot establish connection to pgbouncer://%s:%s/%s' % (
+                    host, port, self.DB_NAME)
                 self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
                                    tags=self._get_service_checks_tags(host, port),
                                    message=message)

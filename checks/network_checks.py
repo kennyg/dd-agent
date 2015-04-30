@@ -16,10 +16,12 @@ DEFAULT_SIZE_POOL = 6
 MAX_LOOP_ITERATIONS = 1000
 FAILURE = "FAILURE"
 
+
 class Status:
     DOWN = "DOWN"
     WARNING = "WARNING"
     UP = "UP"
+
 
 class EventType:
     DOWN = "servicecheck.state_change.down"
@@ -31,10 +33,10 @@ class NetworkCheck(AgentCheck):
     SERVICE_CHECK_PREFIX = 'network_check'
 
     STATUS_TO_SERVICE_CHECK = {
-            Status.UP  : AgentCheck.OK,
-            Status.WARNING : AgentCheck.WARNING,
-            Status.DOWN : AgentCheck.CRITICAL
-        }
+        Status.UP: AgentCheck.OK,
+        Status.WARNING: AgentCheck.WARNING,
+        Status.DOWN: AgentCheck.CRITICAL
+    }
 
     """
     Services checks inherits from this class.
@@ -108,8 +110,11 @@ class NetworkCheck(AgentCheck):
     def check(self, instance):
         if not self.pool_started:
             self.start_pool()
-        if threading.activeCount() > 5 * self.pool_size + 5: # On Windows the agent runs on multiple threads so we need to have an offset of 5 in case the pool_size is 1
-            raise Exception("Thread number (%s) is exploding. Skipping this check" % threading.activeCount())
+        # On Windows the agent runs on multiple threads so we need to have an
+        # offset of 5 in case the pool_size is 1
+        if threading.activeCount() > 5 * self.pool_size + 5:
+            raise Exception("Thread number (%s) is exploding. Skipping this check" %
+                            threading.activeCount())
         self._process_results()
         self._clean()
         name = instance.get('name', None)
@@ -164,7 +169,8 @@ class NetworkCheck(AgentCheck):
             skip_event = _is_affirmative(instance.get('skip_event', False))
             instance_name = instance['name']
             if not skip_event:
-                self.warning("Using events for service checks is deprecated in favor of monitors and will be removed in future versions of the Datadog Agent.")
+                self.warning(
+                    "Using events for service checks is deprecated in favor of monitors and will be removed in future versions of the Datadog Agent.")
                 event = None
 
                 if instance_name not in self.statuses:
@@ -204,7 +210,6 @@ class NetworkCheck(AgentCheck):
     def _check(self, instance):
         """This function should be implemented by inherited classes"""
         raise NotImplementedError
-
 
     def _clean(self):
         now = time.time()

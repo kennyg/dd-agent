@@ -10,6 +10,7 @@ from config import _is_affirmative
 
 
 class DirectoryCheck(AgentCheck):
+
     """This check is for monitoring and reporting metrics on the files for a provided directory
 
     WARNING: the user/group that dd-agent runs as must have access to stat the files in the desired directory
@@ -42,7 +43,8 @@ class DirectoryCheck(AgentCheck):
         if not exists(abs_directory):
             raise Exception("DirectoryCheck: the directory (%s) does not exist" % abs_directory)
 
-        self._get_stats(abs_directory, name, dirtagname, filetagname, filegauges, pattern, recursive)
+        self._get_stats(
+            abs_directory, name, dirtagname, filetagname, filegauges, pattern, recursive)
 
     def _get_stats(self, directory, name, dirtagname, filetagname, filegauges, pattern, recursive):
         dirtags = [dirtagname + ":%s" % name]
@@ -66,13 +68,19 @@ class DirectoryCheck(AgentCheck):
                     if filegauges and directory_files <= 20:
                         filetags = list(dirtags)
                         filetags.append(filetagname + ":%s" % filename)
-                        self.gauge("system.disk.directory.file.bytes", file_stat.st_size, tags=filetags)
-                        self.gauge("system.disk.directory.file.modified_sec_ago", time.time() - file_stat.st_mtime, tags=filetags)
-                        self.gauge("system.disk.directory.file.created_sec_ago", time.time() - file_stat.st_ctime, tags=filetags)
+                        self.gauge(
+                            "system.disk.directory.file.bytes", file_stat.st_size, tags=filetags)
+                        self.gauge("system.disk.directory.file.modified_sec_ago",
+                                   time.time() - file_stat.st_mtime, tags=filetags)
+                        self.gauge("system.disk.directory.file.created_sec_ago",
+                                   time.time() - file_stat.st_ctime, tags=filetags)
                     elif not filegauges:
-                        self.histogram("system.disk.directory.file.bytes", file_stat.st_size, tags=dirtags)
-                        self.histogram("system.disk.directory.file.modified_sec_ago", time.time() - file_stat.st_mtime, tags=dirtags)
-                        self.histogram("system.disk.directory.file.created_sec_ago", time.time() - file_stat.st_ctime, tags=dirtags)
+                        self.histogram(
+                            "system.disk.directory.file.bytes", file_stat.st_size, tags=dirtags)
+                        self.histogram(
+                            "system.disk.directory.file.modified_sec_ago", time.time() - file_stat.st_mtime, tags=dirtags)
+                        self.histogram("system.disk.directory.file.created_sec_ago",
+                                       time.time() - file_stat.st_ctime, tags=dirtags)
 
             # os.walk gives us all sub-directories and their files
             # if we do not want to do this recursively and just want

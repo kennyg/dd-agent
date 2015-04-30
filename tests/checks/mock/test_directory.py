@@ -156,7 +156,8 @@ class DirectoryTestCase(AgentCheckTest):
                     # Files in 'temp_dir/subfolder'
                     if config.get('recursive'):
                         for i in xrange(0, 5):
-                            file_tag = [filetagname + ":%s" % self.temp_dir + "/subfolder" + "/file_" + str(i)]
+                            file_tag = [filetagname + ":%s" %
+                                        self.temp_dir + "/subfolder" + "/file_" + str(i)]
                             self.assertMetric(mname, tags=dir_tags + file_tag, count=1)
 
             # Common metrics

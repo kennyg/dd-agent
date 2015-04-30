@@ -31,6 +31,7 @@ class Services(object):
 
 
 class HAProxy(AgentCheck):
+
     def __init__(self, name, init_config, agentConfig, instances=None):
         AgentCheck.__init__(self, name, init_config, agentConfig, instances)
 
@@ -354,7 +355,8 @@ class HAProxy(AgentCheck):
                 alert_type = "success"
             else:
                 alert_type = "info"
-            title = "%s reported %s:%s back and %s" % (HAProxy_agent, service_name, hostname, status)
+            title = "%s reported %s:%s back and %s" % (
+                HAProxy_agent, service_name, hostname, status)
 
         tags = ["service:%s" % service_name]
         if back_or_front == Services.BACKEND:

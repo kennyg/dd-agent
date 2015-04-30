@@ -13,9 +13,9 @@ class DummyAgentCheck(AgentCheck):
 
 def test_check_status_fail():
     instances = [
-        {'pass':True},
-        {'pass':False},
-        {'pass':True}
+        {'pass': True},
+        {'pass': False},
+        {'pass': True}
     ]
 
     check = DummyAgentCheck('dummy_agent_check', {}, {}, instances)
@@ -28,8 +28,8 @@ def test_check_status_fail():
 
 def test_check_status_pass():
     instances = [
-        {'pass':True},
-        {'pass':True},
+        {'pass': True},
+        {'pass': True},
     ]
 
     check = DummyAgentCheck('dummy_agent_check', {}, {}, instances)

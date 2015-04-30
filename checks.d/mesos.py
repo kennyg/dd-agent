@@ -10,6 +10,7 @@ from util import headers
 import simplejson as json
 import requests
 
+
 class Mesos(AgentCheck):
     SERVICE_CHECK_NAME = "mesos.can_connect"
 
@@ -30,7 +31,7 @@ class Mesos(AgentCheck):
                 self.gauge('mesos.role.frameworks', len(role['frameworks']), tags=tags)
                 self.gauge('mesos.role.weight', role['weight'], tags=tags)
                 resources = role['resources']
-                for attr in ['cpus','mem']:
+                for attr in ['cpus', 'mem']:
                     if attr in resources:
                         self.gauge('mesos.role.' + attr, resources[attr], tags=tags)
 
@@ -43,20 +44,20 @@ class Mesos(AgentCheck):
         response = self.get_master_state(url, timeout)
         if response is not None:
             tags = instance_tags
-            for attr in ['deactivated_slaves','failed_tasks','finished_tasks','killed_tasks','lost_tasks','staged_tasks','started_tasks']:
+            for attr in ['deactivated_slaves', 'failed_tasks', 'finished_tasks', 'killed_tasks', 'lost_tasks', 'staged_tasks', 'started_tasks']:
                 self.gauge('mesos.state.' + attr, response[attr], tags=tags)
 
             for framework in response['frameworks']:
                 tags = ['framework:' + framework['id']] + instance_tags
                 resources = framework['resources']
-                for attr in ['cpus','mem']:
+                for attr in ['cpus', 'mem']:
                     if attr in resources:
                         self.gauge('mesos.state.framework.' + attr, resources[attr], tags=tags)
 
             for slave in response['slaves']:
-                tags = ['mesos','slave:' + slave['id']] + instance_tags
+                tags = ['mesos', 'slave:' + slave['id']] + instance_tags
                 resources = slave['resources']
-                for attr in ['cpus','mem','disk']:
+                for attr in ['cpus', 'mem', 'disk']:
                     if attr in resources:
                         self.gauge('mesos.state.slave.' + attr, resources[attr], tags=tags)
 

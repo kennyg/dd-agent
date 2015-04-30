@@ -18,4 +18,4 @@ class TestSystem(unittest.TestCase):
         cpu = Cpu(logger)
         res = cpu.check({})
         # Make sure we sum up to 100% (or 99% in the case of macs)
-        assert abs(reduce(lambda a, b: a+b, res.values(), 0) - 100) <= 5, res
+        assert abs(reduce(lambda a, b: a + b, res.values(), 0) - 100) <= 5, res

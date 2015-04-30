@@ -26,9 +26,8 @@ class GearmanTestCase(AgentCheckTest):
         self.assertMetric('gearman.workers', value=0.0, tags=tags, count=1)
 
         self.assertServiceCheck("gearman.can_connect", status=AgentCheck.OK,
-            tags=service_checks_tags, count=1)
+                                tags=service_checks_tags, count=1)
         self.coverage_report()
-
 
     def test_service_checks(self):
         config = {
@@ -48,8 +47,8 @@ class GearmanTestCase(AgentCheckTest):
         self.assertMetric('gearman.queued', value=0.0, tags=tags, count=1)
         self.assertMetric('gearman.workers', value=0.0, tags=tags, count=1)
         self.assertServiceCheck("gearman.can_connect", status=AgentCheck.OK,
-            tags=service_checks_tags_ok, count=1)
+                                tags=service_checks_tags_ok, count=1)
         self.assertServiceCheck("gearman.can_connect", status=AgentCheck.CRITICAL,
-            tags=service_checks_tags_not_ok, count=1)
+                                tags=service_checks_tags_not_ok, count=1)
 
         self.coverage_report()

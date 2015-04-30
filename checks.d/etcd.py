@@ -5,6 +5,7 @@ from util import headers
 # 3rd party
 import requests
 
+
 class Etcd(AgentCheck):
 
     DEFAULT_TIMEOUT = 5
@@ -106,14 +107,14 @@ class Etcd(AgentCheck):
         except requests.exceptions.Timeout as e:
             # If there's a timeout
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                message="Timeout when hitting %s" % url,
-                tags = ["url:{0}".format(url)])
+                               message="Timeout when hitting %s" % url,
+                               tags=["url:{0}".format(url)])
             raise
 
         if r.status_code != 200:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                message="Got %s when hitting %s" % (r.status_code, url),
-                tags = ["url:{0}".format(url)])
+                               message="Got %s when hitting %s" % (r.status_code, url),
+                               tags=["url:{0}".format(url)])
             raise Exception("Http status code {0} on url {1}".format(r.status_code, url))
 
         return r.json()

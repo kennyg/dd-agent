@@ -10,10 +10,13 @@ from checks import AgentCheck
 import simplejson as json
 import requests
 
-#Constants
+# Constants
 COUCHBASE_STATS_PATH = '/pools/default'
 DEFAULT_TIMEOUT = 10
+
+
 class Couchbase(AgentCheck):
+
     """Extracts stats from Couchbase via its REST API
     http://docs.couchbase.com/couchbase-manual-2.0/#using-the-rest-api
     """
@@ -24,13 +27,15 @@ class Couchbase(AgentCheck):
         for key, storage_type in storage_totals.items():
             for metric_name, val in storage_type.items():
                 if val is not None:
-                    metric_name = '.'.join(['couchbase', key, self.camel_case_to_joined_lower(metric_name)])
+                    metric_name = '.'.join(
+                        ['couchbase', key, self.camel_case_to_joined_lower(metric_name)])
                     self.gauge(metric_name, val, tags=tags)
 
         for bucket_name, bucket_stats in data['buckets'].items():
             for metric_name, val in bucket_stats.items():
                 if val is not None:
-                    metric_name = '.'.join(['couchbase', 'by_bucket', self.camel_case_to_joined_lower(metric_name)])
+                    metric_name = '.'.join(
+                        ['couchbase', 'by_bucket', self.camel_case_to_joined_lower(metric_name)])
                     metric_tags = list(tags)
                     metric_tags.append('bucket:%s' % bucket_name)
                     self.gauge(metric_name, val[0], tags=metric_tags, device_name=bucket_name)
@@ -38,11 +43,11 @@ class Couchbase(AgentCheck):
         for node_name, node_stats in data['nodes'].items():
             for metric_name, val in node_stats['interestingStats'].items():
                 if val is not None:
-                    metric_name = '.'.join(['couchbase', 'by_node', self.camel_case_to_joined_lower(metric_name)])
+                    metric_name = '.'.join(
+                        ['couchbase', 'by_node', self.camel_case_to_joined_lower(metric_name)])
                     metric_tags = list(tags)
                     metric_tags.append('node:%s' % node_name)
                     self.gauge(metric_name, val, tags=metric_tags, device_name=node_name)
-
 
     def _get_stats(self, url, instance):
         """ Hit a given URL and return the parsed json. """
@@ -55,7 +60,7 @@ class Couchbase(AgentCheck):
             auth = (instance['user'], instance['password'])
 
         r = requests.get(url, auth=auth, headers=headers(self.agentConfig),
-            timeout=timeout)
+                         timeout=timeout)
         r.raise_for_status()
         return r.json()
 
@@ -77,9 +82,9 @@ class Couchbase(AgentCheck):
     def get_data(self, server, instance):
         # The dictionary to be returned.
         couchbase = {'stats': None,
-                'buckets': {},
-                'nodes': {}
-                }
+                     'buckets': {},
+                     'nodes': {}
+                     }
 
         # build couchbase stats entry point
         url = '%s%s' % (server, COUCHBASE_STATS_PATH)
@@ -93,11 +98,11 @@ class Couchbase(AgentCheck):
                 raise Exception("No data returned from couchbase endpoint: %s" % url)
         except requests.exceptions.HTTPError as e:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                tags=service_check_tags, message=str(e.message))
+                               tags=service_check_tags, message=str(e.message))
             raise
         except Exception as e:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                tags=service_check_tags, message=str(e))
+                               tags=service_check_tags, message=str(e))
             raise
         else:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.OK)
@@ -153,4 +158,3 @@ class Couchbase(AgentCheck):
         converted_variable = re.sub('^_|_$', '', converted_variable)
 
         return converted_variable
-

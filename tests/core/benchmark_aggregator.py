@@ -53,13 +53,12 @@ class TestAggregatorPerf(object):
 
     def create_event_packet(self, title, text):
         p = "_e{{{title_len},{text_len}}}:{title}|{text}".format(
-                title_len=len(title),
-                text_len=len(text),
-                title=title,
-                text=text
-            )
+            title_len=len(title),
+            text_len=len(text),
+            title=title,
+            text=text
+        )
         return p
-
 
     def test_dogstatsd_utf8_events(self):
         ma = MetricsBucketAggregator('my.host')
@@ -108,6 +107,6 @@ class TestAggregatorPerf(object):
 
 if __name__ == '__main__':
     t = TestAggregatorPerf()
-    #t.test_dogstatsd_aggregation_perf()
-    #t.test_checksd_aggregation_perf()
+    # t.test_dogstatsd_aggregation_perf()
+    # t.test_checksd_aggregation_perf()
     t.test_dogstatsd_utf8_events()

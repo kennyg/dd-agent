@@ -4,10 +4,13 @@ from mock import patch
 
 from tests.checks.common import get_check_class
 
+
 def _mocked_find_cgroup(*args, **kwargs):
     return
 
+
 class DockerCheckTest(unittest.TestCase):
+
     def test_tag_exclude_all(self):
         """ exclude all, except ubuntu and debian. """
         instance = {

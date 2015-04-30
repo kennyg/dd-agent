@@ -13,9 +13,13 @@ import socket
 
 MAX_CUSTOM_RESULTS = 100
 
-class ShouldRestartException(Exception): pass
+
+class ShouldRestartException(Exception):
+    pass
+
 
 class PostgreSql(AgentCheck):
+
     """Collects per-database, and optionally per-relation metrics, custom metrics
     """
     SOURCE_TYPE_NAME = 'postgresql'
@@ -41,23 +45,23 @@ SELECT datname,
     }
 
     COMMON_METRICS = {
-        'numbackends'       : ('postgresql.connections', GAUGE),
-        'xact_commit'       : ('postgresql.commits', RATE),
-        'xact_rollback'     : ('postgresql.rollbacks', RATE),
-        'blks_read'         : ('postgresql.disk_read', RATE),
-        'blks_hit'          : ('postgresql.buffer_hit', RATE),
-        'tup_returned'      : ('postgresql.rows_returned', RATE),
-        'tup_fetched'       : ('postgresql.rows_fetched', RATE),
-        'tup_inserted'      : ('postgresql.rows_inserted', RATE),
-        'tup_updated'       : ('postgresql.rows_updated', RATE),
-        'tup_deleted'       : ('postgresql.rows_deleted', RATE),
-        'pg_database_size(datname) as pg_database_size' : ('postgresql.database_size', GAUGE),
+        'numbackends': ('postgresql.connections', GAUGE),
+        'xact_commit': ('postgresql.commits', RATE),
+        'xact_rollback': ('postgresql.rollbacks', RATE),
+        'blks_read': ('postgresql.disk_read', RATE),
+        'blks_hit': ('postgresql.buffer_hit', RATE),
+        'tup_returned': ('postgresql.rows_returned', RATE),
+        'tup_fetched': ('postgresql.rows_fetched', RATE),
+        'tup_inserted': ('postgresql.rows_inserted', RATE),
+        'tup_updated': ('postgresql.rows_updated', RATE),
+        'tup_deleted': ('postgresql.rows_deleted', RATE),
+        'pg_database_size(datname) as pg_database_size': ('postgresql.database_size', GAUGE),
     }
 
     NEWER_92_METRICS = {
-        'deadlocks'         : ('postgresql.deadlocks', RATE),
-        'temp_bytes'        : ('postgresql.temp_bytes', RATE),
-        'temp_files'        : ('postgresql.temp_files', RATE),
+        'deadlocks': ('postgresql.deadlocks', RATE),
+        'temp_bytes': ('postgresql.temp_bytes', RATE),
+        'temp_files': ('postgresql.temp_files', RATE),
     }
 
     BGW_METRICS = {
@@ -68,13 +72,13 @@ SELECT datname,
     }
 
     COMMON_BGW_METRICS = {
-        'checkpoints_timed'    : ('postgresql.bgwriter.checkpoints_timed', MONOTONIC),
-        'checkpoints_req'      : ('postgresql.bgwriter.checkpoints_requested', MONOTONIC),
-        'buffers_checkpoint'   : ('postgresql.bgwriter.buffers_checkpoint', MONOTONIC),
-        'buffers_clean'        : ('postgresql.bgwriter.buffers_clean', MONOTONIC),
-        'maxwritten_clean'     : ('postgresql.bgwriter.maxwritten_clean', MONOTONIC),
-        'buffers_backend'      : ('postgresql.bgwriter.buffers_backend', MONOTONIC),
-        'buffers_alloc'        : ('postgresql.bgwriter.buffers_alloc', MONOTONIC),
+        'checkpoints_timed': ('postgresql.bgwriter.checkpoints_timed', MONOTONIC),
+        'checkpoints_req': ('postgresql.bgwriter.checkpoints_requested', MONOTONIC),
+        'buffers_checkpoint': ('postgresql.bgwriter.buffers_checkpoint', MONOTONIC),
+        'buffers_clean': ('postgresql.bgwriter.buffers_clean', MONOTONIC),
+        'maxwritten_clean': ('postgresql.bgwriter.maxwritten_clean', MONOTONIC),
+        'buffers_backend': ('postgresql.bgwriter.buffers_backend', MONOTONIC),
+        'buffers_alloc': ('postgresql.bgwriter.buffers_alloc', MONOTONIC),
     }
 
     NEWER_91_BGW_METRICS = {
@@ -83,7 +87,7 @@ SELECT datname,
 
     NEWER_92_BGW_METRICS = {
         'checkpoint_write_time': ('postgresql.bgwriter.write_time', MONOTONIC),
-        'checkpoint_sync_time' : ('postgresql.bgwriter.sync_time', MONOTONIC),
+        'checkpoint_sync_time': ('postgresql.bgwriter.sync_time', MONOTONIC),
     }
 
     LOCK_METRICS = {
@@ -92,7 +96,7 @@ SELECT datname,
             ('relname', 'table'),
         ],
         'metrics': {
-            'lock_count'       : ('postgresql.locks', GAUGE),
+            'lock_count': ('postgresql.locks', GAUGE),
         },
         'query': """
 SELECT mode,
@@ -106,22 +110,21 @@ SELECT mode,
         'relation': False,
     }
 
-
     REL_METRICS = {
         'descriptors': [
             ('relname', 'table')
         ],
         'metrics': {
-            'seq_scan'          : ('postgresql.seq_scans', RATE),
-            'seq_tup_read'      : ('postgresql.seq_rows_read', RATE),
-            'idx_scan'          : ('postgresql.index_scans', RATE),
-            'idx_tup_fetch'     : ('postgresql.index_rows_fetched', RATE),
-            'n_tup_ins'         : ('postgresql.rows_inserted', RATE),
-            'n_tup_upd'         : ('postgresql.rows_updated', RATE),
-            'n_tup_del'         : ('postgresql.rows_deleted', RATE),
-            'n_tup_hot_upd'     : ('postgresql.rows_hot_updated', RATE),
-            'n_live_tup'        : ('postgresql.live_rows', GAUGE),
-            'n_dead_tup'        : ('postgresql.dead_rows', GAUGE),
+            'seq_scan': ('postgresql.seq_scans', RATE),
+            'seq_tup_read': ('postgresql.seq_rows_read', RATE),
+            'idx_scan': ('postgresql.index_scans', RATE),
+            'idx_tup_fetch': ('postgresql.index_rows_fetched', RATE),
+            'n_tup_ins': ('postgresql.rows_inserted', RATE),
+            'n_tup_upd': ('postgresql.rows_updated', RATE),
+            'n_tup_del': ('postgresql.rows_deleted', RATE),
+            'n_tup_hot_upd': ('postgresql.rows_hot_updated', RATE),
+            'n_live_tup': ('postgresql.live_rows', GAUGE),
+            'n_dead_tup': ('postgresql.dead_rows', GAUGE),
         },
         'query': """
 SELECT relname,
@@ -137,9 +140,9 @@ SELECT relname,
             ('indexrelname', 'index')
         ],
         'metrics': {
-            'idx_scan'          : ('postgresql.index_scans', RATE),
-            'idx_tup_read'      : ('postgresql.index_rows_read', RATE),
-            'idx_tup_fetch'     : ('postgresql.index_rows_fetched', RATE),
+            'idx_scan': ('postgresql.index_scans', RATE),
+            'idx_tup_read': ('postgresql.index_rows_read', RATE),
+            'idx_tup_fetch': ('postgresql.index_rows_fetched', RATE),
         },
         'query': """
 SELECT relname,
@@ -155,9 +158,9 @@ SELECT relname,
             ('relname', 'table'),
         ],
         'metrics': {
-            'pg_table_size(C.oid) as table_size'  : ('postgresql.table_size', GAUGE),
-            'pg_indexes_size(C.oid) as index_size' : ('postgresql.index_size', GAUGE),
-            'pg_total_relation_size(C.oid) as total_size' : ('postgresql.total_size', GAUGE),
+            'pg_table_size(C.oid) as table_size': ('postgresql.table_size', GAUGE),
+            'pg_indexes_size(C.oid) as index_size': ('postgresql.index_size', GAUGE),
+            'pg_total_relation_size(C.oid) as total_size': ('postgresql.total_size', GAUGE),
         },
         'relation': True,
         'query': """
@@ -223,14 +226,14 @@ SELECT %s
             ('relname', 'table'),
         ],
         'metrics': {
-            'heap_blks_read'  : ('postgresql.heap_blocks_read', RATE),
-            'heap_blks_hit'   : ('postgresql.heap_blocks_hit', RATE),
-            'idx_blks_read'   : ('postgresql.index_blocks_read', RATE),
-            'idx_blks_hit'    : ('postgresql.index_blocks_hit', RATE),
-            'toast_blks_read' : ('postgresql.toast_blocks_read', RATE),
-            'toast_blks_hit'  : ('postgresql.toast_blocks_hit', RATE),
-            'tidx_blks_read'  : ('postgresql.toast_index_blocks_read', RATE),
-            'tidx_blks_hit'   : ('postgresql.toast_index_blocks_hit', RATE),
+            'heap_blks_read': ('postgresql.heap_blocks_read', RATE),
+            'heap_blks_hit': ('postgresql.heap_blocks_hit', RATE),
+            'idx_blks_read': ('postgresql.index_blocks_read', RATE),
+            'idx_blks_hit': ('postgresql.index_blocks_hit', RATE),
+            'toast_blks_read': ('postgresql.toast_blocks_read', RATE),
+            'toast_blks_hit': ('postgresql.toast_blocks_hit', RATE),
+            'tidx_blks_read': ('postgresql.toast_index_blocks_read', RATE),
+            'tidx_blks_hit': ('postgresql.toast_index_blocks_hit', RATE),
         },
         'query': """
 SELECT relname,
@@ -272,10 +275,10 @@ SELECT relname,
         return False
 
     def _is_9_1_or_above(self, key, db):
-        return self._is_above(key, db, [9,1,0])
+        return self._is_above(key, db, [9, 1, 0])
 
     def _is_9_2_or_above(self, key, db):
-        return self._is_above(key, db, [9,2,0])
+        return self._is_above(key, db, [9, 2, 0])
 
     def _get_instance_metrics(self, key, db):
         """Use either COMMON_METRICS or COMMON_METRICS + NEWER_92_METRICS
@@ -293,7 +296,7 @@ SELECT relname,
             if sub_key in self.db_instance_metrics:
                 self.instance_metrics[key] = None
                 self.log.debug("Not collecting instance metrics for key: {0} as"
-                    " they are already collected by another instance".format(key))
+                               " they are already collected by another instance".format(key))
                 return None
 
             self.db_instance_metrics.append(sub_key)
@@ -321,7 +324,7 @@ SELECT relname,
             if sub_key in self.db_bgw_metrics:
                 self.bgw_metrics[key] = None
                 self.log.debug("Not collecting bgw metrics for key: {0} as"
-                    " they are already collected by another instance".format(key))
+                               " they are already collected by another instance".format(key))
                 return None
 
             self.db_bgw_metrics.append(sub_key)
@@ -394,7 +397,7 @@ SELECT relname,
             cursor = db.cursor()
 
             for scope in full_metric_scope:
-                if scope == self.REPLICATION_METRICS or not self._is_above(key, db, [9,0,0]):
+                if scope == self.REPLICATION_METRICS or not self._is_above(key, db, [9, 0, 0]):
                     log_func = self.log.debug
                 else:
                     log_func = self.log.warning
@@ -431,7 +434,7 @@ SELECT relname,
                 # FIXME this cramps my style
                 if scope == self.DB_METRICS:
                     self.gauge("postgresql.db.count", len(results),
-                        tags=[t for t in instance_tags if not t.startswith("db:")])
+                               tags=[t for t in instance_tags if not t.startswith("db:")])
 
                 # parse & submit results
                 # A row should look like this
@@ -494,15 +497,15 @@ SELECT relname,
                     connection = pg.connect("user=%s dbname=%s" % (user, dbname))
                 elif port != '':
                     connection = pg.connect(host=host, port=port, user=user,
-                        password=password, database=dbname)
+                                            password=password, database=dbname)
                 else:
                     connection = pg.connect(host=host, user=user, password=password,
-                        database=dbname)
+                                            database=dbname)
             except Exception as e:
                 message = u'Error establishing postgres connection: %s' % (str(e))
                 service_check_tags = self._get_service_check_tags(host, port, dbname)
                 self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                    tags=service_check_tags, message=message)
+                                   tags=service_check_tags, message=message)
                 raise
         else:
             if not host:
@@ -524,8 +527,8 @@ SELECT relname,
         for m in custom_metrics:
             for param in required_parameters:
                 if param not in m:
-                    raise CheckException("Missing {0} parameter in custom metric"\
-                        .format(param))
+                    raise CheckException("Missing {0} parameter in custom metric"
+                                         .format(param))
 
             self.log.debug("Metric: {0}".format(m))
 
@@ -533,7 +536,7 @@ SELECT relname,
                 cap_mtype = mtype.upper()
                 if cap_mtype not in ('RATE', 'GAUGE', 'MONOTONIC'):
                     raise CheckException("Collector method {0} is not known."
-                        " Known methods are RATE, GAUGE, MONOTONIC".format(cap_mtype))
+                                         " Known methods are RATE, GAUGE, MONOTONIC".format(cap_mtype))
 
                 m['metrics'][ref][1] = getattr(PostgreSql, cap_mtype)
                 self.log.debug("Method: %s" % (str(mtype)))
@@ -591,7 +594,7 @@ SELECT relname,
             service_check_tags = self._get_service_check_tags(host, port, dbname)
             message = u'Established connection to postgres://%s:%s/%s' % (host, port, dbname)
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.OK,
-                tags=service_check_tags, message=message)
+                               tags=service_check_tags, message=message)
             try:
                 # commit to close the current query transaction
                 db.commit()

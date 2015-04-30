@@ -10,6 +10,7 @@ from util import headers
 
 
 class CouchDb(AgentCheck):
+
     """Extracts stats from CouchDB via its REST API
     http://wiki.apache.org/couchdb/Runtime_Statistics
     """
@@ -70,20 +71,20 @@ class CouchDb(AgentCheck):
             overall_stats = self._get_stats(url, instance)
         except requests.exceptions.Timeout as e:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                tags=service_check_tags, message="Request timeout: {0}, {1}".format(url, e))
+                               tags=service_check_tags, message="Request timeout: {0}, {1}".format(url, e))
             raise
         except requests.exceptions.HTTPError as e:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                tags=service_check_tags, message=str(e.message))
+                               tags=service_check_tags, message=str(e.message))
             raise
         except Exception as e:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.CRITICAL,
-                tags=service_check_tags, message=str(e))
+                               tags=service_check_tags, message=str(e))
             raise
         else:
             self.service_check(self.SERVICE_CHECK_NAME, AgentCheck.OK,
-                tags=service_check_tags,
-                message='Connection to %s was successful' % url)
+                               tags=service_check_tags,
+                               message='Connection to %s was successful' % url)
 
         # No overall stats? bail out now
         if overall_stats is None:

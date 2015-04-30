@@ -58,9 +58,11 @@ class InvalidJMXConfiguration(Exception):
 
 
 class JMXFetch(object):
+
     """
     Start JMXFetch if any JMX check is configured
     """
+
     def __init__(self, confd_path, agentConfig):
         self.confd_path = confd_path
         self.agentConfig = agentConfig
@@ -192,7 +194,8 @@ class JMXFetch(object):
                         if tools_jar_path is None and check_tools_jar_path is not None:
                             tools_jar_path = check_tools_jar_path
                 except InvalidJMXConfiguration, e:
-                    log.error("%s check does not have a valid JMX configuration: %s" % (check_name, e))
+                    log.error("%s check does not have a valid JMX configuration: %s" %
+                              (check_name, e))
                     # Make sure check_name is a string - Fix issues with Windows
                     check_name = check_name.encode('ascii', 'ignore')
                     invalid_checks[check_name] = str(e)
@@ -221,12 +224,18 @@ class JMXFetch(object):
                 '-classpath',
                 classpath,
                 JMXFETCH_MAIN_CLASS,
-                '--check_period', str(self.check_frequency * 1000),  # Period of the main loop of jmxfetch in ms
-                '--conf_directory', r"%s" % self.confd_path,  # Path of the conf.d directory that will be read by jmxfetch,
-                '--log_level', JAVA_LOGGING_LEVEL.get(self.logging_config.get("log_level"), "INFO"),  # Log Level: Mapping from Python log level to log4j log levels
-                '--log_location', r"%s" % self.logging_config.get('jmxfetch_log_file'),  # Path of the log file
+                # Period of the main loop of jmxfetch in ms
+                '--check_period', str(self.check_frequency * 1000),
+                # Path of the conf.d directory that will be read by jmxfetch,
+                '--conf_directory', r"%s" % self.confd_path,
+                # Log Level: Mapping from Python log level to log4j log levels
+                '--log_level', JAVA_LOGGING_LEVEL.get(
+                    self.logging_config.get("log_level"), "INFO"),
+                # Path of the log file
+                '--log_location', r"%s" % self.logging_config.get('jmxfetch_log_file'),
                 '--reporter', reporter,  # Reporter to use
-                '--status_location', r"%s" % path_to_status_file,  # Path to the status file to write
+                # Path to the status file to write
+                '--status_location', r"%s" % path_to_status_file,
                 command,  # Name of the command
             ]
 
@@ -247,7 +256,7 @@ class JMXFetch(object):
             log.info("Running %s" % " ".join(subprocess_args))
             jmx_process = subprocess.Popen(subprocess_args, close_fds=True)
             self.jmx_process = jmx_process
-            
+
             # Register SIGINT and SIGTERM signal handlers
             self.register_signal_handlers()
 
@@ -370,7 +379,8 @@ class JMXFetch(object):
                     raise InvalidJMXConfiguration("You must specify the path to tools.jar"
                                                   " in your JDK.")
                 elif not os.path.isfile(tools_jar_path):
-                    raise InvalidJMXConfiguration("Unable to find tools.jar at %s" % tools_jar_path)
+                    raise InvalidJMXConfiguration(
+                        "Unable to find tools.jar at %s" % tools_jar_path)
             else:
                 tools_jar_path = None
 
@@ -379,9 +389,9 @@ class JMXFetch(object):
     def _get_path_to_jmxfetch(self):
         if get_os() != 'windows':
             return os.path.realpath(os.path.join(os.path.abspath(__file__), "..", "checks",
-                                    "libs", JMX_FETCH_JAR_NAME))
+                                                 "libs", JMX_FETCH_JAR_NAME))
         return os.path.realpath(os.path.join(os.path.abspath(__file__), "..", "..",
-                                "jmxfetch", JMX_FETCH_JAR_NAME))
+                                             "jmxfetch", JMX_FETCH_JAR_NAME))
 
 
 def init(config_path=None):

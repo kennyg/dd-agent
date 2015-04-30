@@ -7,6 +7,7 @@ from util import headers
 
 
 class PHPFPMCheck(AgentCheck):
+
     """
     Tracks basic php-fpm metrics via the status module
     Requires php-fpm pools to have the status option.

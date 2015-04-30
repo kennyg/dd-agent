@@ -9,6 +9,7 @@ MAX_CPU_PCT = 10
 
 
 class CollectorMetrics(Check):
+
     def __init__(self, logger):
         Check.__init__(self, logger)
         self.logger = logger
@@ -26,20 +27,20 @@ class CollectorMetrics(Check):
         if collection_time > MAX_COLLECTION_TIME:
             self.save_sample('datadog.agent.collector.collection.time', collection_time)
             self.logger.info("Collection time (s) is high: %.1f, metrics count: %d, events count: %d"
-                                % (collection_time, len(payload['metrics']), len(payload['events'])))
+                             % (collection_time, len(payload['metrics']), len(payload['events'])))
 
         if emit_time is not None and emit_time > MAX_EMIT_TIME:
             self.save_sample('datadog.agent.emitter.emit.time', emit_time)
             self.logger.info("Emit time (s) is high: %.1f, metrics count: %d, events count: %d"
-                                % (emit_time, len(payload['metrics']), len(payload['events'])))
+                             % (emit_time, len(payload['metrics']), len(payload['events'])))
 
         if cpu_time is not None:
             try:
-                cpu_used_pct = 100.0 * float(cpu_time)/float(collection_time)
+                cpu_used_pct = 100.0 * float(cpu_time) / float(collection_time)
                 if cpu_used_pct > MAX_CPU_PCT:
                     self.save_sample('datadog.agent.collector.cpu.used', cpu_used_pct)
                     self.logger.info("CPU consumed (%%) is high: %.1f, metrics count: %d, events count: %d"
-                                        % (cpu_used_pct, len(payload['metrics']), len(payload['events'])))
+                                     % (cpu_used_pct, len(payload['metrics']), len(payload['events'])))
             except Exception, e:
                 self.logger.debug("Couldn't compute cpu used by collector with values %s %s %s"
                                   % (cpu_time, collection_time, str(e)))

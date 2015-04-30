@@ -53,6 +53,7 @@ def configcheck():
 
 
 class Flare(object):
+
     """
     Compress all important logs and configuration files for debug,
     and then send them to Datadog (which transfers them to Support)

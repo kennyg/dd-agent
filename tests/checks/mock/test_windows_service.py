@@ -69,17 +69,21 @@ WSService_attr = {                                  # Stopped Windows Service
 
 
 class Mocked_Win32_Service(object):
+
     """
     Generate Mocked Win32 Service from given attributes
     """
+
     def __init__(self, **entries):
         self.__dict__.update(entries)
 
 
 class Mocked_WMI(Mock):
+
     """
     Mock WMI methods for test purpose
     """
+
     def Win32_Service(self, name):
         """
         Returns mock match Win32 Service

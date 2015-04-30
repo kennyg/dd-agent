@@ -2,7 +2,7 @@
 from collections import defaultdict
 import re
 import subprocess
-import xml.parsers.expat # python 2.4 compatible
+import xml.parsers.expat  # python 2.4 compatible
 
 # project
 from checks import AgentCheck
@@ -20,6 +20,7 @@ class BackendStatus(object):
         elif status == cls.SICK:
             return AgentCheck.CRITICAL
         return AgentCheck.UNKNOWN
+
 
 class Varnish(AgentCheck):
     SERVICE_CHECK_NAME = 'varnish.backend_healthy'
@@ -45,7 +46,7 @@ class Varnish(AgentCheck):
             else:
                 # Unsupported data type, ignore
                 self._reset()
-                return # don't save
+                return  # don't save
 
             # reset for next stat element
             self._reset()
@@ -104,7 +105,7 @@ class Varnish(AgentCheck):
 
     def _get_varnishstat_output(self, cmd):
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                     stderr=subprocess.PIPE)
+                                stderr=subprocess.PIPE)
         output, error = proc.communicate()
         if error and len(error) > 0:
             self.log.error(error)
@@ -251,4 +252,3 @@ class Varnish(AgentCheck):
                 tags = ['backend:%s' % backend]
                 self.service_check(self.SERVICE_CHECK_NAME, check_status,
                                    tags=tags, message=message)
-

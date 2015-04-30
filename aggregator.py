@@ -18,11 +18,17 @@ log = logging.getLogger(__name__)
 # MetricsBucketAggregator constructor.
 RECENT_POINT_THRESHOLD_DEFAULT = 3600
 
-class Infinity(Exception): pass
-class UnknownValue(Exception): pass
+
+class Infinity(Exception):
+    pass
+
+
+class UnknownValue(Exception):
+    pass
 
 
 class Metric(object):
+
     """
     A base metric class that accepts points, slices them into time intervals
     and performs roll-ups within those intervals.
@@ -38,6 +44,7 @@ class Metric(object):
 
 
 class Gauge(Metric):
+
     """ A metric that tracks a value at particular points in time. """
 
     def __init__(self, formatter, name, tags, hostname, device_name, extra_config=None):
@@ -54,7 +61,6 @@ class Gauge(Metric):
         self.value = value
         self.last_sample_time = time()
         self.timestamp = timestamp
-
 
     def flush(self, timestamp, interval):
         if self.value is not None:
@@ -73,7 +79,9 @@ class Gauge(Metric):
 
         return []
 
+
 class BucketGauge(Gauge):
+
     """ A metric that tracks a value at particular points in time.
     The difference beween this class and Gauge is that this class will
     report that gauge sample time as the time that Metric is flushed, as
@@ -100,6 +108,7 @@ class BucketGauge(Gauge):
 
 
 class Count(Metric):
+
     """ A metric that tracks a count. """
 
     def __init__(self, formatter, name, tags, hostname, device_name, extra_config=None):
@@ -131,6 +140,7 @@ class Count(Metric):
             )]
         finally:
             self.value = None
+
 
 class MonotonicCount(Metric):
 
@@ -180,6 +190,7 @@ class MonotonicCount(Metric):
 
 
 class Counter(Metric):
+
     """ A metric that tracks a counter value. """
 
     def __init__(self, formatter, name, tags, hostname, device_name, extra_config=None):
@@ -214,7 +225,9 @@ class Counter(Metric):
 DEFAULT_HISTOGRAM_AGGREGATES = ['max', 'median', 'avg', 'count']
 DEFAULT_HISTOGRAM_PERCENTILES = [0.95]
 
+
 class Histogram(Metric):
+
     """ A metric to track the distribution of a set of values. """
 
     def __init__(self, formatter, name, tags, hostname, device_name, extra_config=None):
@@ -247,7 +260,7 @@ class Histogram(Metric):
 
         min_ = self.samples[0]
         max_ = self.samples[-1]
-        med = self.samples[int(round(length/2 - 1))]
+        med = self.samples[int(round(length / 2 - 1))]
         avg = sum(self.samples) / float(length)
 
         aggregators = [
@@ -255,7 +268,7 @@ class Histogram(Metric):
             ('max', max_, MetricTypes.GAUGE),
             ('median', med, MetricTypes.GAUGE),
             ('avg', avg, MetricTypes.GAUGE),
-            ('count', self.count/interval, MetricTypes.RATE),
+            ('count', self.count / interval, MetricTypes.RATE),
         ]
 
         metric_aggrs = [
@@ -265,15 +278,15 @@ class Histogram(Metric):
         ]
 
         metrics = [self.formatter(
-                hostname=self.hostname,
-                device_name=self.device_name,
-                tags=self.tags,
-                metric='%s.%s' % (self.name, suffix),
-                value=value,
-                timestamp=ts,
-                metric_type=metric_type,
-                interval=interval,
-            ) for suffix, value, metric_type in metric_aggrs
+            hostname=self.hostname,
+            device_name=self.device_name,
+            tags=self.tags,
+            metric='%s.%s' % (self.name, suffix),
+            value=value,
+            timestamp=ts,
+            metric_type=metric_type,
+            interval=interval,
+        ) for suffix, value, metric_type in metric_aggrs
         ]
 
         for p in self.percentiles:
@@ -297,6 +310,7 @@ class Histogram(Metric):
 
 
 class Set(Metric):
+
     """ A metric to track the number of unique elements in a set. """
 
     def __init__(self, formatter, name, tags, hostname, device_name, extra_config=None):
@@ -331,6 +345,7 @@ class Set(Metric):
 
 
 class Rate(Metric):
+
     """ Track the rate of metrics over each flush interval """
 
     def __init__(self, formatter, name, tags, hostname, device_name, extra_config=None):
@@ -382,7 +397,9 @@ class Rate(Metric):
         finally:
             self.samples = self.samples[-1:]
 
+
 class Aggregator(object):
+
     """
     Abstract metric aggregator class.
     """
@@ -390,9 +407,9 @@ class Aggregator(object):
     ALLOW_STRINGS = ['s', ]
 
     def __init__(self, hostname, interval=1.0, expiry_seconds=300,
-            formatter=None, recent_point_threshold=None,
-            histogram_aggregates=None, histogram_percentiles=None,
-            utf8_decoding=False):
+                 formatter=None, recent_point_threshold=None,
+                 histogram_aggregates=None, histogram_percentiles=None,
+                 utf8_decoding=False):
         self.events = []
         self.service_checks = []
         self.total_count = 0
@@ -421,7 +438,7 @@ class Aggregator(object):
     def packets_per_second(self, interval):
         if interval == 0:
             return 0
-        return round(float(self.count)/interval, 2)
+        return round(float(self.count) / interval, 2)
 
     def parse_metric_packet(self, packet):
         """
@@ -471,8 +488,8 @@ class Aggregator(object):
                         value = float(raw_value)
                     except ValueError:
                         # Otherwise, raise an error saying it must be a number
-                        raise Exception('Metric value must be a number: %s, %s' % (name, raw_value))
-
+                        raise Exception('Metric value must be a number: %s, %s' %
+                                        (name, raw_value))
 
             # Parse the optional values - sample rate & tags.
             sample_rate = 1
@@ -485,7 +502,7 @@ class Aggregator(object):
                 elif m[0] == '#':
                     tags = tuple(sorted(m[1:].split(',')))
 
-            parsed_packets.append((name, value, metric_type, tags,sample_rate))
+            parsed_packets.append((name, value, metric_type, tags, sample_rate))
 
         return parsed_packets
 
@@ -510,9 +527,9 @@ class Aggregator(object):
 
             event = {
                 'title': metadata[:title_length],
-                'text': self._unescape_event_text(metadata[title_length+1:title_length+text_length+1])
+                'text': self._unescape_event_text(metadata[title_length + 1:title_length + text_length + 1])
             }
-            meta = metadata[title_length+text_length+1:]
+            meta = metadata[title_length + text_length + 1:]
             for m in meta.split('|')[1:]:
                 if m[0] == u't':
                     event['alert_type'] = m[2:]
@@ -600,8 +617,7 @@ class Aggregator(object):
                 for name, value, mtype, tags, sample_rate in parsed_packets:
                     hostname, device_name, tags = self._extract_magic_tags(tags)
                     self.submit_metric(name, value, mtype, tags=tags, hostname=hostname,
-                        device_name=device_name, sample_rate=sample_rate)
-
+                                       device_name=device_name, sample_rate=sample_rate)
 
     def _extract_magic_tags(self, tags):
         """Magic tags (host, device) override metric hostname and device_name attributes"""
@@ -626,7 +642,7 @@ class Aggregator(object):
         return hostname, device_name, tags
 
     def submit_metric(self, name, value, mtype, tags=None, hostname=None,
-                                device_name=None, timestamp=None, sample_rate=1):
+                      device_name=None, timestamp=None, sample_rate=1):
         """ Add a metric to be aggregated """
         raise NotImplementedError()
 
@@ -704,15 +720,17 @@ class Aggregator(object):
     def send_packet_count(self, metric_name):
         self.submit_metric(metric_name, self.count, 'g')
 
+
 class MetricsBucketAggregator(Aggregator):
+
     """
     A metric aggregator class.
     """
 
     def __init__(self, hostname, interval=1.0, expiry_seconds=300,
-            formatter=None, recent_point_threshold=None,
-            histogram_aggregates=None, histogram_percentiles=None,
-            utf8_decoding=False):
+                 formatter=None, recent_point_threshold=None,
+                 histogram_aggregates=None, histogram_percentiles=None,
+                 utf8_decoding=False):
         super(MetricsBucketAggregator, self).__init__(
             hostname,
             interval,
@@ -740,7 +758,7 @@ class MetricsBucketAggregator(Aggregator):
         return timestamp - (timestamp % self.interval)
 
     def submit_metric(self, name, value, mtype, tags=None, hostname=None,
-                                device_name=None, timestamp=None, sample_rate=1):
+                      device_name=None, timestamp=None, sample_rate=1):
         # Avoid calling extra functions to dedupe tags if there are none
         # Note: if you change the way that context is created, please also change create_empty_metrics,
         #  which counts on this order
@@ -775,7 +793,7 @@ class MetricsBucketAggregator(Aggregator):
             if context not in metric_by_context:
                 metric_class = self.metric_type_to_class[mtype]
                 metric_by_context[context] = metric_class(self.formatter, name, tags,
-                    hostname, device_name, self.metric_config.get(metric_class))
+                                                          hostname, device_name, self.metric_config.get(metric_class))
 
             metric_by_context[context].sample(value, sample_rate, timestamp)
 
@@ -784,7 +802,8 @@ class MetricsBucketAggregator(Aggregator):
         #  (Set, Gauge, Histogram) do not report if no data is submitted
         for context, last_sample_time in sample_time_by_context.items():
             if last_sample_time < expiry_timestamp:
-                log.debug("%s hasn't been submitted in %ss. Expiring." % (context, self.expiry_seconds))
+                log.debug("%s hasn't been submitted in %ss. Expiring." %
+                          (context, self.expiry_seconds))
                 self.last_sample_time_by_context.pop(context, None)
             else:
                 # The expiration currently only applies to Counters
@@ -810,7 +829,8 @@ class MetricsBucketAggregator(Aggregator):
                     for context, metric in metric_by_context.items():
                         if metric.last_sample_time < expiry_timestamp:
                             # This should never happen
-                            log.warning("%s hasn't been submitted in %ss. Expiring." % (context, self.expiry_seconds))
+                            log.warning("%s hasn't been submitted in %ss. Expiring." %
+                                        (context, self.expiry_seconds))
                             not_sampled_in_this_bucket.pop(context, None)
                             self.last_sample_time_by_context.pop(context, None)
                         else:
@@ -818,20 +838,24 @@ class MetricsBucketAggregator(Aggregator):
                             if isinstance(metric, Counter):
                                 self.last_sample_time_by_context[context] = metric.last_sample_time
                                 not_sampled_in_this_bucket.pop(context, None)
-                    # We need to account for Metrics that have not expired and were not flushed for this bucket
-                    self.create_empty_metrics(not_sampled_in_this_bucket, expiry_timestamp, bucket_start_timestamp, metrics)
+                    # We need to account for Metrics that have not expired and were not
+                    # flushed for this bucket
+                    self.create_empty_metrics(
+                        not_sampled_in_this_bucket, expiry_timestamp, bucket_start_timestamp, metrics)
 
                     del self.metric_by_bucket[bucket_start_timestamp]
         else:
             # Even if there are no metrics in this flush, there may be some non-expired counters
-            #  We should only create these non-expired metrics if we've passed an interval since the last flush
+            # We should only create these non-expired metrics if we've passed an
+            # interval since the last flush
             if flush_cutoff_time >= self.last_flush_cutoff_time + self.interval:
-                self.create_empty_metrics(self.last_sample_time_by_context.copy(), expiry_timestamp, \
-                                                flush_cutoff_time-self.interval, metrics)
+                self.create_empty_metrics(self.last_sample_time_by_context.copy(), expiry_timestamp,
+                                          flush_cutoff_time - self.interval, metrics)
 
         # Log a warning regarding metrics with old timestamps being submitted
         if self.num_discarded_old_points > 0:
-            log.warn('%s points were discarded as a result of having an old timestamp' % self.num_discarded_old_points)
+            log.warn('%s points were discarded as a result of having an old timestamp' %
+                     self.num_discarded_old_points)
             self.num_discarded_old_points = 0
 
         # Save some stats.
@@ -845,14 +869,15 @@ class MetricsBucketAggregator(Aggregator):
 
 
 class MetricsAggregator(Aggregator):
+
     """
     A metric aggregator class.
     """
 
     def __init__(self, hostname, interval=1.0, expiry_seconds=300,
-            formatter=None, recent_point_threshold=None,
-            histogram_aggregates=None, histogram_percentiles=None,
-            utf8_decoding=False):
+                 formatter=None, recent_point_threshold=None,
+                 histogram_aggregates=None, histogram_percentiles=None,
+                 utf8_decoding=False):
         super(MetricsAggregator, self).__init__(
             hostname,
             interval,
@@ -876,7 +901,7 @@ class MetricsAggregator(Aggregator):
         }
 
     def submit_metric(self, name, value, mtype, tags=None, hostname=None,
-                                device_name=None, timestamp=None, sample_rate=1):
+                      device_name=None, timestamp=None, sample_rate=1):
         # Avoid calling extra functions to dedupe tags if there are none
 
         # Keep hostname with empty string to unset it
@@ -889,7 +914,7 @@ class MetricsAggregator(Aggregator):
         if context not in self.metrics:
             metric_class = self.metric_type_to_class[mtype]
             self.metrics[context] = metric_class(self.formatter, name, tags,
-                hostname, device_name, self.metric_config.get(metric_class))
+                                                 hostname, device_name, self.metric_config.get(metric_class))
         cur_time = time()
         if timestamp is not None and cur_time - int(timestamp) > self.recent_point_threshold:
             log.debug("Discarding %s - ts = %s , current ts = %s " % (name, timestamp, cur_time))
@@ -932,14 +957,16 @@ class MetricsAggregator(Aggregator):
         metrics = []
         for context, metric in self.metrics.items():
             if metric.last_sample_time < expiry_timestamp:
-                log.debug("%s hasn't been submitted in %ss. Expiring." % (context, self.expiry_seconds))
+                log.debug("%s hasn't been submitted in %ss. Expiring." %
+                          (context, self.expiry_seconds))
                 del self.metrics[context]
             else:
                 metrics += metric.flush(timestamp, self.interval)
 
         # Log a warning regarding metrics with old timestamps being submitted
         if self.num_discarded_old_points > 0:
-            log.warn('%s points were discarded as a result of having an old timestamp' % self.num_discarded_old_points)
+            log.warn('%s points were discarded as a result of having an old timestamp' %
+                     self.num_discarded_old_points)
             self.num_discarded_old_points = 0
 
         # Save some stats.
@@ -948,25 +975,26 @@ class MetricsAggregator(Aggregator):
         self.count = 0
         return metrics
 
+
 def get_formatter(config):
-  formatter = api_formatter
+    formatter = api_formatter
 
-  if config['statsd_metric_namespace']:
-    def metric_namespace_formatter_wrapper(metric, value, timestamp, tags,
-        hostname=None, device_name=None, metric_type=None, interval=None):
-      metric_prefix = config['statsd_metric_namespace']
-      if metric_prefix[-1] != '.':
-        metric_prefix += '.'
+    if config['statsd_metric_namespace']:
+        def metric_namespace_formatter_wrapper(metric, value, timestamp, tags,
+                                               hostname=None, device_name=None, metric_type=None, interval=None):
+            metric_prefix = config['statsd_metric_namespace']
+            if metric_prefix[-1] != '.':
+                metric_prefix += '.'
 
-      return api_formatter(metric_prefix + metric, value, timestamp, tags, hostname,
-        device_name, metric_type, interval)
+            return api_formatter(metric_prefix + metric, value, timestamp, tags, hostname,
+                                 device_name, metric_type, interval)
 
-    formatter = metric_namespace_formatter_wrapper
-  return formatter
+        formatter = metric_namespace_formatter_wrapper
+    return formatter
 
 
 def api_formatter(metric, value, timestamp, tags, hostname=None, device_name=None,
-        metric_type=None, interval=None):
+                  metric_type=None, interval=None):
     return {
         'metric': metric,
         'points': [(timestamp, value)],
@@ -974,5 +1002,5 @@ def api_formatter(metric, value, timestamp, tags, hostname=None, device_name=Non
         'host': hostname,
         'device_name': device_name,
         'type': metric_type or MetricTypes.GAUGE,
-        'interval':interval,
+        'interval': interval,
     }

@@ -10,6 +10,7 @@ from dogstatsd import MetricsBucketAggregator
 
 
 class TestUnitMetricsBucketAggregator(unittest.TestCase):
+
     def setUp(self):
         self.interval = 1
 
@@ -67,7 +68,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         ag_interval = 10
         # The min is not enabled by default
         stats = MetricsBucketAggregator('myhost', interval=ag_interval,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min'])
+                                        histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min'])
         for i in range(5):
             stats.submit_packets('h1:1|h')
         for i in range(20):
@@ -76,18 +77,17 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         self.sleep_for_interval_length(ag_interval)
         metrics = self.sort_metrics(stats.flush())
         _, _, h1count, _, _, _, \
-        _, _, h2count, _, _, _ = metrics
+            _, _, h2count, _, _, _ = metrics
 
         nt.assert_equal(h1count['points'][0][1], 0.5)
         nt.assert_equal(h2count['points'][0][1], 2)
-
 
     def test_tags(self):
         stats = MetricsBucketAggregator('myhost', interval=self.interval)
         stats.submit_packets('gauge:1|c')
         stats.submit_packets('gauge:2|c|@1')
         stats.submit_packets('gauge:4|c|#tag1,tag2')
-        stats.submit_packets('gauge:8|c|#tag2,tag1') # Should be the same as above
+        stats.submit_packets('gauge:8|c|#tag2,tag1')  # Should be the same as above
         stats.submit_packets('gauge:16|c|#tag3,tag4')
 
         self.sleep_for_interval_length()
@@ -263,7 +263,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         nt.assert_equals(third['metric'], 'my.third.counter')
         nt.assert_equals(third['points'][0][1], 3)
 
-        #Now wait for the bucket interval to pass, and get the other points
+        # Now wait for the bucket interval to pass, and get the other points
         self.sleep_for_interval_length(ag_interval)
         metrics = self.sort_metrics(stats.flush())
 
@@ -384,13 +384,13 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         nt.assert_equals(second['metric'], 'my.second.gauge')
         nt.assert_equals(second['points'][0][1], 1.5)
 
-        #check that they come back empty
+        # check that they come back empty
         self.sleep_for_interval_length(ag_interval)
         metrics = self.sort_metrics(stats.flush())
         nt.assert_equals(len(metrics), 0)
 
     def test_gauge_flush_during_bucket(self):
-        #Tests returning data when flush is called in the middle of a time bucket that has data
+        # Tests returning data when flush is called in the middle of a time bucket that has data
         ag_interval = self.interval
         stats = MetricsBucketAggregator('myhost', interval=ag_interval)
         self.wait_for_bucket_boundary(ag_interval)
@@ -414,7 +414,6 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
 
         nt.assert_equals(second['metric'], 'my.second.gauge')
         nt.assert_equals(second['points'][0][1], 1.5)
-
 
         self.sleep_for_interval_length(ag_interval)
         metrics = self.sort_metrics(stats.flush())
@@ -543,13 +542,13 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         ag_interval = self.interval
         # The min is not enabled by default
         stats = MetricsBucketAggregator('myhost', interval=ag_interval,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min'])
+                                        histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min'])
         self.wait_for_bucket_boundary(ag_interval)
 
         # Sample all numbers between 1-100 many times. This
         # means our percentiles should be relatively close to themselves.
         percentiles = range(100)
-        random.shuffle(percentiles) # in place
+        random.shuffle(percentiles)  # in place
         for i in percentiles:
             for j in xrange(20):
                 for type_ in ['h', 'ms']:
@@ -567,23 +566,21 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         self.assert_almost_equal(pmed['points'][0][1], 50, 2)
         self.assert_almost_equal(pavg['points'][0][1], 50, 2)
         self.assert_almost_equal(pmin['points'][0][1], 1, 1)
-        nt.assert_equals(pcount['points'][0][1], 4000) # 100 * 20 * 2
+        nt.assert_equals(pcount['points'][0][1], 4000)  # 100 * 20 * 2
         nt.assert_equals(p95['host'], 'myhost')
 
         # Ensure that histograms are reset.
         metrics = self.sort_metrics(stats.flush())
         assert not metrics
 
-
     def test_sampled_histogram(self):
         # Submit a sampled histogram.
         # The min is not enabled by default
         stats = MetricsBucketAggregator('myhost',
-            interval=self.interval,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
+                                        interval=self.interval,
+                                        histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                        )
         stats.submit_packets('sampled.hist:5|h|@0.5')
-
 
         # Assert we scale up properly.
         self.sleep_for_interval_length()
@@ -598,13 +595,13 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         ag_interval = 1
         # The min is not enabled by default
         stats = MetricsBucketAggregator('myhost', interval=ag_interval,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min'])
+                                        histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min'])
 
         # Sample all numbers between 1-100 many times. This
         # means our percentiles should be relatively close to themselves.
         self.wait_for_bucket_boundary(ag_interval)
         percentiles = range(100)
-        random.shuffle(percentiles) # in place
+        random.shuffle(percentiles)  # in place
         for i in percentiles:
             for j in xrange(20):
                 for type_ in ['h', 'ms']:
@@ -613,7 +610,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
 
         self.wait_for_bucket_boundary(ag_interval)
         percentiles = range(50)
-        random.shuffle(percentiles) # in place
+        random.shuffle(percentiles)  # in place
         for i in percentiles:
             for j in xrange(20):
                 for type_ in ['h', 'ms']:
@@ -624,14 +621,15 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         metrics = self.sort_metrics(stats.flush())
 
         nt.assert_equal(len(metrics), 12)
-        p95, p95_b, pavg, pavg_b, pcount, pcount_b, pmax, pmax_b, pmed, pmed_b, pmin, pmin_b = self.sort_metrics(metrics)
+        p95, p95_b, pavg, pavg_b, pcount, pcount_b, pmax, pmax_b, pmed, pmed_b, pmin, pmin_b = self.sort_metrics(
+            metrics)
         nt.assert_equal(p95['metric'], 'my.p.95percentile')
         self.assert_almost_equal(p95['points'][0][1], 95, 10)
         self.assert_almost_equal(pmax['points'][0][1], 99, 1)
         self.assert_almost_equal(pmed['points'][0][1], 50, 2)
         self.assert_almost_equal(pavg['points'][0][1], 50, 2)
         self.assert_almost_equal(pmin['points'][0][1], 1, 1)
-        nt.assert_equals(pcount['points'][0][1], 4000) # 100 * 20 * 2
+        nt.assert_equals(pcount['points'][0][1], 4000)  # 100 * 20 * 2
 
         nt.assert_equal(p95_b['metric'], 'my.p.95percentile')
         self.assert_almost_equal(p95_b['points'][0][1], 47, 10)
@@ -639,7 +637,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         self.assert_almost_equal(pmed_b['points'][0][1], 25, 2)
         self.assert_almost_equal(pavg_b['points'][0][1], 25, 2)
         self.assert_almost_equal(pmin_b['points'][0][1], 1, 1)
-        nt.assert_equals(pcount_b['points'][0][1], 2000) # 100 * 20 * 2
+        nt.assert_equals(pcount_b['points'][0][1], 2000)  # 100 * 20 * 2
 
         nt.assert_equals(p95['host'], 'myhost')
 
@@ -650,18 +648,17 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         metrics = self.sort_metrics(stats.flush())
         assert not metrics
 
-
     def test_histogram_flush_during_bucket(self):
         ag_interval = 1
         # The min is not enabled by default
         stats = MetricsBucketAggregator('myhost', interval=ag_interval,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min'])
+                                        histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min'])
 
         # Sample all numbers between 1-100 many times. This
         # means our percentiles should be relatively close to themselves.
         self.wait_for_bucket_boundary(ag_interval)
         percentiles = range(100)
-        random.shuffle(percentiles) # in place
+        random.shuffle(percentiles)  # in place
         for i in percentiles:
             for j in xrange(20):
                 for type_ in ['h', 'ms']:
@@ -670,7 +667,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
 
         self.wait_for_bucket_boundary(ag_interval)
         percentiles = range(50)
-        random.shuffle(percentiles) # in place
+        random.shuffle(percentiles)  # in place
         for i in percentiles:
             for j in xrange(20):
                 for type_ in ['h', 'ms']:
@@ -687,7 +684,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         self.assert_almost_equal(pmed['points'][0][1], 50, 2)
         self.assert_almost_equal(pavg['points'][0][1], 50, 2)
         self.assert_almost_equal(pmin['points'][0][1], 1, 1)
-        nt.assert_equal(pcount['points'][0][1], 4000) # 100 * 20 * 2
+        nt.assert_equal(pcount['points'][0][1], 4000)  # 100 * 20 * 2
         nt.assert_equals(p95['host'], 'myhost')
 
         self.sleep_for_interval_length()
@@ -700,7 +697,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         self.assert_almost_equal(pmed_b['points'][0][1], 25, 2)
         self.assert_almost_equal(pavg_b['points'][0][1], 25, 2)
         self.assert_almost_equal(pmin_b['points'][0][1], 1, 1)
-        nt.assert_equals(pcount_b['points'][0][1], 2000) # 100 * 20 * 2
+        nt.assert_equals(pcount_b['points'][0][1], 2000)  # 100 * 20 * 2
 
         # Ensure that histograms are reset.
         metrics = self.sort_metrics(stats.flush())
@@ -723,7 +720,6 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         counter, gauge = metrics
         assert counter['points'][0][1] == 2
         assert gauge['points'][0][1] == 1
-
 
     def test_bad_packets_throw_errors(self):
         packets = [
@@ -756,8 +752,8 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         expiry = ag_interval * 5 + 2
         # The min is not enabled by default
         stats = MetricsBucketAggregator('myhost', interval=ag_interval,
-            expiry_seconds=expiry,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min'])
+                                        expiry_seconds=expiry,
+                                        histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min'])
         stats.submit_packets('test.counter:123|c')
         stats.submit_packets('test.gauge:55|g')
         stats.submit_packets('test.set:44|s')
@@ -773,11 +769,11 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         nt.assert_equal(metrics[0]['points'][0][1], 123)
         nt.assert_equal(metrics[0]['points'][0][0], submit_bucket_timestamp)
 
-        #flush without waiting - should get nothing
+        # flush without waiting - should get nothing
         metrics = self.sort_metrics(stats.flush())
         assert not metrics, str(metrics)
 
-        #Don't sumbit anything
+        # Don't sumbit anything
         submit_time = time.time()
         bucket_timestamp = submit_time - (submit_time % ag_interval)
 
@@ -798,7 +794,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         nt.assert_equal(metrics[1]['metric'], 'test.gauge')
         nt.assert_equal(metrics[1]['points'][0][1], 5)
 
-        #flush without waiting - should get nothing
+        # flush without waiting - should get nothing
         metrics = self.sort_metrics(stats.flush())
         assert not metrics, str(metrics)
 
@@ -826,7 +822,6 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         nt.assert_equal(len(metrics), 9)
         nt.assert_equal(metrics[0]['metric'], 'test.counter')
         nt.assert_equal(metrics[0]['points'][0][1], 123)
-
 
     def test_diagnostic_stats(self):
         stats = MetricsBucketAggregator('myhost', interval=self.interval)
@@ -860,7 +855,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
             metrics = self.sort_metrics(stats.flush())
             assert len(metrics) > 0
 
-            #depending on timing, some runs may return the metric more that one bucket, meaning there may be
+            # depending on timing, some runs may return the metric more that one bucket, meaning there may be
             # more than one 'metric' for each of the counters
             counter_count = 0
             hist_count = 0
@@ -925,7 +920,7 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         stats.submit_packets(u'_e{9,4}:2intitulé|text')
         stats.submit_packets('_e{14,4}:3title content|text')
         stats.submit_packets('_e{14,4}:4title|content|text')
-        stats.submit_packets('_e{13,4}:5title\\ntitle|text') # \n stays escaped
+        stats.submit_packets('_e{13,4}:5title\\ntitle|text')  # \n stays escaped
 
         events = self.sort_events(stats.flush_events())
 
@@ -942,8 +937,8 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         stats = MetricsBucketAggregator('myhost', interval=self.interval)
         stats.submit_packets('_e{2,0}:t1|')
         stats.submit_packets('_e{2,12}:t2|text|content')
-        stats.submit_packets('_e{2,23}:t3|First line\\nSecond line') # \n is a newline
-        stats.submit_packets(u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪') # utf-8 compliant
+        stats.submit_packets('_e{2,23}:t3|First line\\nSecond line')  # \n is a newline
+        stats.submit_packets(u'_e{2,19}:t4|♬ †øU †øU ¥ºu T0µ ♪')  # utf-8 compliant
 
         events = self.sort_events(stats.flush_events())
 
@@ -960,11 +955,11 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         threshold = 100
         # The min is not enabled by default
         stats = MetricsBucketAggregator('myhost',
-            recent_point_threshold=threshold,
-            interval=ag_interval,
-            histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES+['min']
-        )
-        timestamp_beyond_threshold = time.time() - threshold*2
+                                        recent_point_threshold=threshold,
+                                        interval=ag_interval,
+                                        histogram_aggregates=DEFAULT_HISTOGRAM_AGGREGATES + ['min']
+                                        )
+        timestamp_beyond_threshold = time.time() - threshold * 2
 
         # Ensure that old gauges get dropped due to old timestamps
         stats.submit_metric('my.first.gauge', 5, 'g')
@@ -980,8 +975,9 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
         nt.assert_equals(first['points'][0][1], 5)
         nt.assert_equals(first['host'], 'myhost')
 
-        timestamp_within_threshold = time.time() - threshold/2
-        bucket_for_timestamp_within_threshold = timestamp_within_threshold - (timestamp_within_threshold % ag_interval)
+        timestamp_within_threshold = time.time() - threshold / 2
+        bucket_for_timestamp_within_threshold = timestamp_within_threshold - \
+            (timestamp_within_threshold % ag_interval)
         stats.submit_metric('my.1.gauge', 5, 'g')
         stats.submit_metric('my.1.gauge', 1, 'g', timestamp=timestamp_within_threshold)
         stats.submit_metric('my.2.counter', 20, 'c', timestamp=timestamp_within_threshold)
@@ -1006,7 +1002,8 @@ class TestUnitMetricsBucketAggregator(unittest.TestCase):
 
         nt.assert_equals(second['metric'], 'my.2.counter')
         nt.assert_equals(second['points'][0][1], 20)
-        self.assert_almost_equal(second['points'][0][0], bucket_for_timestamp_within_threshold, 0.1)
+        self.assert_almost_equal(
+            second['points'][0][0], bucket_for_timestamp_within_threshold, 0.1)
         nt.assert_equals(second_b['metric'], 'my.2.counter')
         nt.assert_equals(second_b['points'][0][1], 0)
         self.assert_almost_equal(second_b['points'][0][0], bucket_timestamp, 0.1)

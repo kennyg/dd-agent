@@ -207,12 +207,12 @@ class TestPostgres(AgentCheckTest):
 
         # Test service checks
         self.assertServiceCheck('postgres.can_connect',
-            count=1, status=AgentCheck.OK,
-            tags=['host:localhost', 'port:15432', 'db:datadog_test']
-        )
+                                count=1, status=AgentCheck.OK,
+                                tags=['host:localhost', 'port:15432', 'db:datadog_test']
+                                )
         self.assertServiceCheck('postgres.can_connect',
-            count=1, status=AgentCheck.OK,
-            tags=['host:localhost', 'port:15432', 'db:dogs']
-        )
+                                count=1, status=AgentCheck.OK,
+                                tags=['host:localhost', 'port:15432', 'db:dogs']
+                                )
 
         self.coverage_report()

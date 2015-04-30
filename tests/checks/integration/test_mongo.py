@@ -10,8 +10,10 @@ PORT1 = 37017
 PORT2 = 37018
 MAX_WAIT = 150
 
+
 @attr(requires='mongo')
 class TestMongo(unittest.TestCase):
+
     def testMongoCheck(self):
         self.agentConfig = {
             'version': '0.1',
@@ -22,7 +24,7 @@ class TestMongo(unittest.TestCase):
             'instances': [{
                 'server': "mongodb://localhost:%s/test" % PORT1
             },
-            {
+                {
                 'server': "mongodb://localhost:%s/test" % PORT2
             }]
         }
@@ -54,7 +56,7 @@ class TestMongo(unittest.TestCase):
         for m in metrics:
             metric_name = m[0]
             if metric_name in metric_val_checks:
-                self.assertTrue( metric_val_checks[metric_name]( m[2] ) )
+                self.assertTrue(metric_val_checks[metric_name](m[2]))
 
         # Run the check against our running server
         self.check.check(self.config['instances'][1])
@@ -69,11 +71,15 @@ class TestMongo(unittest.TestCase):
         service_checks_count = len(service_checks)
         self.assertTrue(type(service_checks) == type([]))
         self.assertTrue(service_checks_count > 0)
-        self.assertEquals(len([sc for sc in service_checks if sc['check'] == self.check.SERVICE_CHECK_NAME]), 4, service_checks)
+        self.assertEquals(
+            len([sc for sc in service_checks if sc['check'] == self.check.SERVICE_CHECK_NAME]), 4, service_checks)
         # Assert that all service checks have the proper tags: host and port
-        self.assertEquals(len([sc for sc in service_checks if "host:localhost" in sc['tags']]), service_checks_count, service_checks)
-        self.assertEquals(len([sc for sc in service_checks if "port:%s" % PORT1 in sc['tags'] or "port:%s" % PORT2 in sc['tags']]), service_checks_count, service_checks)
-        self.assertEquals(len([sc for sc in service_checks if "db:test" in sc['tags']]), service_checks_count, service_checks)
+        self.assertEquals(len(
+            [sc for sc in service_checks if "host:localhost" in sc['tags']]), service_checks_count, service_checks)
+        self.assertEquals(len([sc for sc in service_checks if "port:%s" % PORT1 in sc[
+                          'tags'] or "port:%s" % PORT2 in sc['tags']]), service_checks_count, service_checks)
+        self.assertEquals(
+            len([sc for sc in service_checks if "db:test" in sc['tags']]), service_checks_count, service_checks)
 
         # Metric assertions
         metrics = self.check.get_metrics()
@@ -84,7 +90,7 @@ class TestMongo(unittest.TestCase):
         for m in metrics:
             metric_name = m[0]
             if metric_name in metric_val_checks:
-                self.assertTrue( metric_val_checks[metric_name]( m[2] ) )
+                self.assertTrue(metric_val_checks[metric_name](m[2]))
 
     def testMongoOldConfig(self):
         conf = {
@@ -122,7 +128,7 @@ class TestMongo(unittest.TestCase):
         for m in metrics:
             metric_name = m[0]
             if metric_name in metric_val_checks:
-                self.assertTrue( metric_val_checks[metric_name]( m[2] ) )
+                self.assertTrue(metric_val_checks[metric_name](m[2]))
 
         # Run the check against our running server
         self.check.check(conf['instances'][1])
@@ -140,7 +146,7 @@ class TestMongo(unittest.TestCase):
         for m in metrics:
             metric_name = m[0]
             if metric_name in metric_val_checks:
-                self.assertTrue( metric_val_checks[metric_name]( m[2] ) )
+                self.assertTrue(metric_val_checks[metric_name](m[2]))
 
 if __name__ == '__main__':
     unittest.main()

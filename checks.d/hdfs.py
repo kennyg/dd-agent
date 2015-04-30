@@ -9,15 +9,17 @@ try:
     # pylint: disable=E0611
     from snakebite.namenode import Namenode
 except ImportError:
-# This is only available on snakebite >= 2.2.0
-# but snakebite 2.x is only compatible with hadoop >= 2.2.0
-# So we bundle snakebite 1.3.9 and let the possibility to upgrade to a newer version
-# if people want to use HA Mode
+    # This is only available on snakebite >= 2.2.0
+    # but snakebite 2.x is only compatible with hadoop >= 2.2.0
+    # So we bundle snakebite 1.3.9 and let the possibility to upgrade to a newer version
+    # if people want to use HA Mode
     Namenode = None
 
 DEFAULT_PORT = 8020
 
+
 class HDFSCheck(AgentCheck):
+
     """Report on free space and space used in HDFS.
     """
 
@@ -39,7 +41,8 @@ class HDFSCheck(AgentCheck):
                 raise ValueError('Each namenode should specify a "url" parameter.')
 
         if len(instance['namenodes']) == 1:
-            host, port = instance['namenodes'][0]['url'], instance['namenodes'][0].get('port', DEFAULT_PORT)
+            host, port = instance['namenodes'][0]['url'], instance[
+                'namenodes'][0].get('port', DEFAULT_PORT)
             return snakebite.client.Client(host, port)
 
         else:
@@ -48,10 +51,11 @@ class HDFSCheck(AgentCheck):
                 # We are running snakebite 1.x which is not compatible with the HA mode
                 # Let's display a warning and use regular mode
                 self.warning("HA Mode is not available with snakebite < 2.2.0"
-                    "Upgrade to the latest version of snakebiteby running: "
-                    "sudo /opt/datadog-agent/embedded/bin/pip install --upgrade snakebite")
+                             "Upgrade to the latest version of snakebiteby running: "
+                             "sudo /opt/datadog-agent/embedded/bin/pip install --upgrade snakebite")
 
-                host, port = instance['namenodes'][0]['url'], instance['namenodes'][0].get('port', DEFAULT_PORT)
+                host, port = instance['namenodes'][0]['url'], instance[
+                    'namenodes'][0].get('port', DEFAULT_PORT)
                 return snakebite.client.Client(host, port)
             else:
                 self.log.debug("Running in HA Mode")
@@ -81,8 +85,8 @@ class HDFSCheck(AgentCheck):
         self.gauge('hdfs.free', stats['remaining'], tags=tags)
         self.gauge('hdfs.capacity', stats['capacity'], tags=tags)
         self.gauge('hdfs.in_use', float(stats['used']) /
-                float(stats['capacity']), tags=tags)
+                   float(stats['capacity']), tags=tags)
         self.gauge('hdfs.under_replicated', stats['under_replicated'],
-                tags=tags)
+                   tags=tags)
         self.gauge('hdfs.missing_blocks', stats['missing_blocks'], tags=tags)
         self.gauge('hdfs.corrupt_blocks', stats['corrupt_blocks'], tags=tags)

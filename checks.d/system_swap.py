@@ -1,6 +1,7 @@
 from checks import AgentCheck
 import psutil
 
+
 class SystemSwap(AgentCheck):
 
     def check(self, instance):

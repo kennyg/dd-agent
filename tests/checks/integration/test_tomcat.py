@@ -9,7 +9,10 @@ import os
 from jmxfetch import JMXFetch
 
 STATSD_PORT = 8126
+
+
 class DummyReporter(threading.Thread):
+
     def __init__(self, metrics_aggregator):
         threading.Thread.__init__(self)
         self.finished = threading.Event()
@@ -18,7 +21,6 @@ class DummyReporter(threading.Thread):
         self.metrics = None
         self.finished = False
         self.start()
-
 
     def run(self):
         while not self.finished:
@@ -33,6 +35,7 @@ class DummyReporter(threading.Thread):
 
 @attr(requires='tomcat')
 class TestTomcat(unittest.TestCase):
+
     def setUp(self):
         aggregator = MetricsAggregator("test_host")
         self.server = Server(aggregator, "localhost", STATSD_PORT)
@@ -64,9 +67,12 @@ class TestTomcat(unittest.TestCase):
 
         self.assertTrue(type(metrics) == type([]))
         self.assertTrue(len(metrics) > 0)
-        self.assertEquals(len([t for t in metrics if t['metric'] == "tomcat.threads.busy" and "instance:tomcat_instance" in t['tags']]), 2, metrics)
-        self.assertEquals(len([t for t in metrics if t['metric'] == "tomcat.bytes_sent" and "instance:tomcat_instance" in t['tags']]), 0, metrics)
-        self.assertTrue(len([t for t in metrics if "jvm." in t['metric'] and "instance:tomcat_instance" in t['tags']]) > 4, metrics)
+        self.assertEquals(len([t for t in metrics if t[
+                          'metric'] == "tomcat.threads.busy" and "instance:tomcat_instance" in t['tags']]), 2, metrics)
+        self.assertEquals(len([t for t in metrics if t[
+                          'metric'] == "tomcat.bytes_sent" and "instance:tomcat_instance" in t['tags']]), 0, metrics)
+        self.assertTrue(len([t for t in metrics if "jvm." in t['metric']
+                             and "instance:tomcat_instance" in t['tags']]) > 4, metrics)
 
 
 if __name__ == "__main__":

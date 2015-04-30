@@ -24,7 +24,7 @@ class ProcessCheck(AgentCheck):
         'system.processes.iowrite_bytes',
         'system.processes.voluntary_ctx_switches',
         'system.processes.involuntary_ctx_switches',
-        )
+    )
 
     def find_pids(self, search_string, exact_match, ignore_denied_access):
         """
@@ -123,7 +123,7 @@ class ProcessCheck(AgentCheck):
                     voluntary_ctx_switches = None
                     involuntary_ctx_switches = None
                 except AttributeError:
-                        self.log.debug("process attribute not supported on this platform")
+                    self.log.debug("process attribute not supported on this platform")
                 except psutil.AccessDenied:
                     got_denied = True
 
@@ -196,7 +196,7 @@ class ProcessCheck(AgentCheck):
         self.gauge('system.processes.number', len(pids), tags=tags)
 
         metrics = dict(zip(ProcessCheck.PROCESS_GAUGE, self.get_process_metrics(pids,
-                           cpu_check_interval, ignore_denied_access)))
+                                                                                cpu_check_interval, ignore_denied_access)))
 
         for metric, value in metrics.iteritems():
             if value is not None:

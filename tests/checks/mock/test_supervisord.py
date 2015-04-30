@@ -24,12 +24,18 @@ instances:
         }],
         'expected_metrics': {
             'server1': [
-                ('supervisord.process.count', 1, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:up']}),
-                ('supervisord.process.count', 1, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:down']}),
-                ('supervisord.process.count', 1, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:unknown']}),
-                ('supervisord.process.uptime', 0, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'supervisord_process:python']}),
-                ('supervisord.process.uptime', 125, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'supervisord_process:mysql']}),
-                ('supervisord.process.uptime', 0, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'supervisord_process:java']})
+                ('supervisord.process.count', 1, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:up']}),
+                ('supervisord.process.count', 1, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:down']}),
+                ('supervisord.process.count', 1, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:unknown']}),
+                ('supervisord.process.uptime', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'supervisord_process:python']}),
+                ('supervisord.process.uptime', 125, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'supervisord_process:mysql']}),
+                ('supervisord.process.uptime', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'supervisord_process:java']})
             ]
         },
         'expected_service_checks': {
@@ -79,17 +85,26 @@ instances:
         }],
         'expected_metrics': {
             'server0': [
-                ('supervisord.process.count', 0, {'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:up']}),
-                ('supervisord.process.count', 2, {'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:down']}),
-                ('supervisord.process.count', 0, {'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:unknown']}),
-                ('supervisord.process.uptime', 0, {'type': 'gauge', 'tags': ['supervisord_server:server0', 'supervisord_process:apache2']}),
-                ('supervisord.process.uptime', 2, {'type': 'gauge', 'tags': ['supervisord_server:server0', 'supervisord_process:webapp']}),
+                ('supervisord.process.count', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:up']}),
+                ('supervisord.process.count', 2, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:down']}),
+                ('supervisord.process.count', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:unknown']}),
+                ('supervisord.process.uptime', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server0', 'supervisord_process:apache2']}),
+                ('supervisord.process.uptime', 2, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server0', 'supervisord_process:webapp']}),
             ],
             'server1': [
-                ('supervisord.process.count', 0, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:up']}),
-                ('supervisord.process.count', 1, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:down']}),
-                ('supervisord.process.count', 0, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:unknown']}),
-                ('supervisord.process.uptime', 0, {'type': 'gauge', 'tags': ['supervisord_server:server1', 'supervisord_process:ruby']})
+                ('supervisord.process.count', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:up']}),
+                ('supervisord.process.count', 1, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:down']}),
+                ('supervisord.process.count', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'status:unknown']}),
+                ('supervisord.process.uptime', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server1', 'supervisord_process:ruby']})
             ]
         },
         'expected_service_checks': {
@@ -167,10 +182,14 @@ instances:
         }],
         'expected_metrics': {
             'server0': [
-                ('supervisord.process.count', 1, {'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:up']}),
-                ('supervisord.process.count', 0, {'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:down']}),
-                ('supervisord.process.count', 0, {'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:unknown']}),
-                ('supervisord.process.uptime', 125, {'type': 'gauge', 'tags': ['supervisord_server:server0', 'supervisord_process:mysql']})
+                ('supervisord.process.count', 1, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:up']}),
+                ('supervisord.process.count', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:down']}),
+                ('supervisord.process.count', 0, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server0', 'status:unknown']}),
+                ('supervisord.process.uptime', 125, {
+                 'type': 'gauge', 'tags': ['supervisord_server:server0', 'supervisord_process:mysql']})
             ]
         },
         'expected_service_checks': {
@@ -266,20 +285,20 @@ Stop time: \nExit Status: 0"""
     def assert_metrics(self, expected, actual):
         actual = [TestSupervisordCheck.norm_metric(metric) for metric in actual]
         self.assertEquals(len(actual), len(expected), msg='Invalid # metrics reported.\n'
-            'Expected: {0}. Found: {1}'.format(len(expected), len(actual)))
+                          'Expected: {0}. Found: {1}'.format(len(expected), len(actual)))
         self.assertTrue(all([expected_metric in actual for expected_metric in expected]),
-            msg='Reported metrics are incorrect.\nExpected: {0}.\n'
-                'Found: {1}'.format(expected, actual))
+                        msg='Reported metrics are incorrect.\nExpected: {0}.\n'
+                        'Found: {1}'.format(expected, actual))
 
     def assert_service_checks(self, expected, actual):
         actual = [TestSupervisordCheck.norm_service_check(service_check)
                   for service_check in actual]
         self.assertEquals(len(actual), len(expected), msg='Invalid # service checks reported.'
-            '\nExpected: {0}. Found: {1}.'.format(expected, actual))
+                          '\nExpected: {0}. Found: {1}.'.format(expected, actual))
         self.assertTrue(all([expected_service_check in actual
-                 for expected_service_check in expected]),
-            msg='Reported service checks are incorrect.\nExpected:{0}\n'
-                'Found:{1}'.format(expected, actual))
+                             for expected_service_check in expected]),
+                        msg='Reported service checks are incorrect.\nExpected:{0}\n'
+                        'Found:{1}'.format(expected, actual))
 
     @staticmethod
     def norm_metric(metric):
@@ -296,15 +315,18 @@ Stop time: \nExit Status: 0"""
 
 
 class MockXmlRcpServer:
+
     """Class that mocks an XML RPC server. Initialized using a mocked
      supervisord server url, which is used to initialize the supervisord
      server.
      """
+
     def __init__(self, url):
         self.supervisor = MockSupervisor(url)
 
 
 class MockSupervisor:
+
     """Class that mocks a supervisord sever. Initialized using the server url
     and mocks process methods providing mocked process information for testing
     purposes.

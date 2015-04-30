@@ -3,6 +3,7 @@
 import sys
 import ConfigParser
 
+
 def main():
 
     if len(sys.argv) < 3 or len(sys.argv) > 4:
@@ -26,7 +27,7 @@ def main():
                 current_config.remove_section(section)
 
     # Write out config
-    f = open(dest,'wb')
+    f = open(dest, 'wb')
     current_config.write(f)
     f.close()
 

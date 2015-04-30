@@ -11,6 +11,7 @@ from kafka.common import OffsetRequest
 from kazoo.client import KazooClient
 from kazoo.exceptions import NoNodeError
 
+
 class KafkaCheck(AgentCheck):
 
     SOURCE_TYPE_NAME = 'kafka'
